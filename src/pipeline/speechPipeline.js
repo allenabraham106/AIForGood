@@ -1,4 +1,4 @@
-(function (global) {
+﻿(function (global) {
   const DEFAULT_SETTINGS = {
     pauseMs: 1000,
     dialogueRate: 0.96,
@@ -198,9 +198,10 @@
           return;
         }
 
+        const synth = global.speechSynthesis;
         const utterance = new global.SpeechSynthesisUtterance(text);
         utterance.voice = voice;
-        utterance.lang = voice && voice.lang ? voice.lang : "en-CA";
+        utterance.lang = voice && voice.lang ? voice.lang : "en-US";
         utterance.rate = rate;
         utterance.pitch = settings.pitch;
         utterance.volume = settings.volume;
@@ -215,10 +216,14 @@
             return;
           }
 
-          reject(new Error("Speech playback failed."));
+          reject(new Error(event && event.error ? "Speech playback failed: " + event.error + "." : "Speech playback failed."));
         };
 
-        global.speechSynthesis.speak(utterance);
+        if (typeof synth.resume === "function") {
+          synth.resume();
+        }
+
+        synth.speak(utterance);
       });
     }
 
@@ -369,3 +374,4 @@
     createSpeechPipeline: createSpeechPipeline
   };
 })(globalThis);
+

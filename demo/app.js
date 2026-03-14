@@ -47,6 +47,7 @@
   let replaySegmentIds = ["reflection"];
   let lessonPlaybackMode = lessonModeSelect ? lessonModeSelect.value : "full";
   let isListening = false;
+  let isPracticeProcessing = false;
   let practiceStopRequested = false;
   let practiceInterimTranscript = "";
   let practiceStatusMessage = "";
@@ -1012,6 +1013,7 @@
     statusPillElement.style.color = isError ? "#8f301f" : "";
   }
 })();
+
 
 
 

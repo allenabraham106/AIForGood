@@ -569,15 +569,6 @@
 
     function wrapAttemptLifecycle(attempt) {
       activeAttempt = attempt;
-      if (queuedStopOptions) {
-        const pendingStop = queuedStopOptions;
-        queuedStopOptions = null;
-        global.setTimeout(function () {
-          if (activeAttempt === attempt) {
-            attempt.stop(pendingStop);
-          }
-        }, 0);
-      }
       return attempt.promise.finally(function () {
         clearActiveAttempt(attempt);
       });
@@ -804,6 +795,14 @@
         }
 
         speechConfig.speechRecognitionLanguage = tokenInfo.language || "en-US";
+        if (SpeechSDK.PropertyId && typeof speechConfig.setProperty === "function") {
+          if (SpeechSDK.PropertyId.SpeechServiceConnection_InitialSilenceTimeoutMs) {
+            speechConfig.setProperty(SpeechSDK.PropertyId.SpeechServiceConnection_InitialSilenceTimeoutMs, "10000");
+          }
+          if (SpeechSDK.PropertyId.Speech_SegmentationSilenceTimeoutMs) {
+            speechConfig.setProperty(SpeechSDK.PropertyId.Speech_SegmentationSilenceTimeoutMs, "2000");
+          }
+        }
         if (typeof speechConfig.requestWordLevelTimestamps === "function") {
           speechConfig.requestWordLevelTimestamps();
         }
@@ -936,7 +935,6 @@
     function stop(stopOptions) {
       const safeStopOptions = stopOptions || {};
       if (!activeAttempt) {
-        queuedStopOptions = safeStopOptions;
         return;
       }
       activeAttempt.stop(safeStopOptions);
@@ -961,3 +959,5 @@
     createSpeechPractice: createSpeechPractice
   };
 })(globalThis);
+
+
