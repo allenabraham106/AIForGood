@@ -360,3 +360,19 @@ code {
     justify-content: space-between;
   }
 }
+
+.scenario-card[data-locked="true"] {
+  opacity: 0.52;
+  background: #f3ede4;
+}
+
+.scenario-card[data-locked="true"]:hover,
+.scenario-card[data-locked="true"]:focus-visible {
+  transform: none;
+  border-color: var(--line);
+  box-shadow: none;
+}
+
+.scenario-card:disabled {
+  cursor: not-allowed;
+}

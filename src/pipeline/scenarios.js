@@ -3,80 +3,82 @@
     {
       id: "greeting-resident",
       title: "Greeting a New Resident",
-      context: "A PSW meets a resident for the first time at the start of a shift.",
+      context: "Amara meets Mr. Chen for the first time and helps him feel safe.",
       dialogue: [
-        { speaker: "PSW", text: "Good morning. My name is Amara. I am here to help you today." },
-        { speaker: "Resident", text: "Oh, hello. I do not know you." },
-        { speaker: "PSW", text: "I understand. I will be gentle. Can I bring you some water first?" },
-        { speaker: "Resident", text: "Yes, please. Thank you." }
+        { speaker: "Amara", text: "Good morning. My name is Amara. I am your personal support worker." },
+        { speaker: "Resident", text: "Good morning Amara. My name is Mr. Chen. This place feels new." },
+        { speaker: "Amara", text: "Thank you, Mr. Chen. I am happy to meet you. I will help you today." },
+        { speaker: "Resident", text: "Thank you. I feel a little nervous." },
+        { speaker: "Amara", text: "That is okay. I am here with you. You can ask me any question." },
+        { speaker: "Resident", text: "Thank you Amara. I feel better now." }
       ],
       culturalNarration: [
-        "Notice how Amara says her name right away.",
-        "In Canadian care homes, residents often feel calmer when they know who is helping them.",
-        "Offering something small, like water, shows respect and care."
+        "In Canada, staff introduce themselves clearly to new residents.",
+        "This helps residents feel safe and respected on the first day.",
+        "Using names and a calm voice helps build trust."
       ],
-      keyPhrase: "I will be gentle. I am here to help.",
-      reflectionQuestion: "What would you say to help a nervous resident feel safe?"
+      keyPhrase: "I am here with you. You can ask me any question.",
+      reflectionQuestion: "How do you greet a new resident?"
     },
     {
       id: "resident-refuses-help",
-      title: "Responding With Patience",
-      context: "A resident refuses help, and the PSW needs to stay calm and respectful.",
+      title: "Resident Refuses Help",
+      context: "Amara stays calm when Mr. Chen does not want help before lunch.",
       dialogue: [
-        { speaker: "PSW", text: "Ms. Lee, it is time to get ready now." },
-        { speaker: "Resident", text: "No. I do not want help." },
-        { speaker: "PSW", text: "That is okay. We can go slowly." },
-        { speaker: "Resident", text: "I am tired today." },
-        { speaker: "PSW", text: "I understand. Would you like to sit first?" },
-        { speaker: "Resident", text: "Yes. That would help." }
+        { speaker: "Amara", text: "Hello Mr. Chen. I am here to help you wash your hands before lunch." },
+        { speaker: "Resident", text: "No, I do not want help. Please go." },
+        { speaker: "Amara", text: "I hear you. I will not touch you now. Can you tell me why you do not want help?" },
+        { speaker: "Resident", text: "I feel tired. I want to sleep." },
+        { speaker: "Amara", text: "I understand. I will return in 10 minutes. If you need me, you can press this button." },
+        { speaker: "Resident", text: "Okay Amara. Thank you for your patience." }
       ],
       culturalNarration: [
-        "The PSW does not argue or rush the resident.",
-        "In Canadian care settings, patience and choice help build trust.",
-        "A calm voice can lower stress for both people."
+        "In Canadian care homes, residents have the right to say no.",
+        "Staff stay calm, speak softly, and do not force care.",
+        "They respect the choice and try again in a kind way."
       ],
-      keyPhrase: "That is okay. We can go slowly.",
-      reflectionQuestion: "What can you say when a resident says no?"
+      keyPhrase: "I understand. I will return in 10 minutes.",
+      reflectionQuestion: "How can you stay calm when a resident refuses?"
     },
     {
       id: "talking-to-supervisor",
       title: "Talking to Your Supervisor",
-      context: "A PSW needs to explain a shift problem clearly and professionally.",
+      context: "Amara tells her supervisor about a care problem and asks for help.",
       dialogue: [
-        { speaker: "PSW", text: "Hi, Maria. I need help with room twelve." },
-        { speaker: "Supervisor", text: "What is happening?" },
-        { speaker: "PSW", text: "Mr. Chen needs two people to move safely." },
-        { speaker: "Supervisor", text: "Thank you for telling me." },
-        { speaker: "PSW", text: "Can someone come with me now?" },
-        { speaker: "Supervisor", text: "Yes. I will send Jordan." }
+        { speaker: "Amara", text: "Hello Nurse Lee. Do you have one minute?" },
+        { speaker: "Supervisor", text: "Hello Amara. Yes, I have time. What is wrong?" },
+        { speaker: "Amara", text: "Mr. Chen refused his morning bath. I spoke softly and I stayed calm, but he still said no." },
+        { speaker: "Supervisor", text: "Thank you for telling me. You did well. Let us plan another time for the bath." },
+        { speaker: "Amara", text: "Can you please join me later to speak with him?" },
+        { speaker: "Supervisor", text: "Yes, Amara. We will go together and talk with him." }
       ],
       culturalNarration: [
-        "The PSW gives the problem clearly and asks for help early.",
-        "In many Canadian workplaces, asking for support is safer than struggling alone.",
-        "Short, direct updates help supervisors act quickly."
+        "In Canadian care homes, staff tell the supervisor when there is a problem.",
+        "This is seen as professional and safe, not as failure.",
+        "Asking for help protects the resident and also supports the worker."
       ],
-      keyPhrase: "I need help with room twelve.",
-      reflectionQuestion: "How would you ask your supervisor for help clearly?"
+      keyPhrase: "I understand. I will return in 10 minutes.",
+      reflectionQuestion: "How can you ask your supervisor for help?"
     },
     {
       id: "small-emergency",
       title: "Handling a Small Emergency",
-      context: "A resident feels weak, and the PSW needs to stay calm and call for help.",
+      context: "Amara keeps Mr. Chen calm, seated, and safe while she calls the nurse.",
       dialogue: [
-        { speaker: "Resident", text: "I feel dizzy." },
-        { speaker: "PSW", text: "Please stay seated. I am here with you." },
-        { speaker: "Resident", text: "Okay." },
-        { speaker: "PSW", text: "I am calling the nurse now." },
-        { speaker: "Nurse", text: "We are on the way." },
-        { speaker: "PSW", text: "You are safe. Help is coming." }
+        { speaker: "Amara", text: "Mr. Chen, are you okay? You look very pale." },
+        { speaker: "Resident", text: "I feel very dizzy. I cannot stand." },
+        { speaker: "Amara", text: "I understand. Please sit in the chair. I will call the nurse now." },
+        { speaker: "Resident", text: "Please stay with me." },
+        { speaker: "Amara", text: "I am here with you. I am pressing the red button on the wall to call the nurse." },
+        { speaker: "Resident", text: "Thank you Amara. I feel safe with you." }
       ],
       culturalNarration: [
-        "The PSW uses calm, simple words.",
-        "In an emergency, clear reassurance helps the resident feel safer.",
-        "Calling for help quickly is part of good care, not a mistake."
+        "In a small emergency, staff stay calm and speak clearly.",
+        "They use the call bell or button to bring a nurse fast.",
+        "They stay with the resident and give simple, clear information."
       ],
-      keyPhrase: "Please stay seated. Help is coming.",
-      reflectionQuestion: "What would you say to keep someone calm?"
+      keyPhrase: "I will call the nurse now.",
+      reflectionQuestion: "How can you stay calm in a small emergency?"
     }
   ];
 
@@ -102,7 +104,8 @@
       dialogueLines.join("\n"),
       "Cultural narration:",
       scenario.culturalNarration.join(" "),
-      "Key phrase: " + scenario.keyPhrase
+      "Key phrase: " + scenario.keyPhrase,
+      "Fallback reflection question: " + scenario.reflectionQuestion
     ].join("\n");
   }
 

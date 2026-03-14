@@ -10,7 +10,7 @@
   const phaseChipElement = document.querySelector("[data-phase-chip]");
   const completionChipElement = document.querySelector("[data-completion-chip]");
   const playButton = document.querySelector("[data-play-button]");
-  const stopButton = document.querySelector("[data-stop-button]");
+  const actionButton = document.querySelector("[data-action-button]");
   const completeButton = document.querySelector("[data-complete-button]");
   const resetProgressButton = document.querySelector("[data-reset-progress]");
   const voiceSelect = document.querySelector("[data-voice-select]");
@@ -19,35 +19,173 @@
   const pipeline = globalThis.CareVoicePipeline.createSpeechPipeline();
 
   let selectedScenarioId = scenarios[0].id;
-  let completedScenarioIds = loadCompletedScenarioIds();
+  let completedScenarioIds = normalizeCompletedScenarioIds(loadCompletedScenarioIds());
   let activePhase = "";
+  let completedPhases = [];
   let readyToComplete = false;
+  let isPlaying = false;
+  let currentPlaybackMode = "idle";
 
+  ensureSelectedScenarioIsUnlocked();
   renderScenarioCards();
   renderSelectedScenario();
   renderSegmentList();
   hydrateVoices();
+  syncControls("idle");
 
   if (!globalThis.CareVoicePipeline.supportsSpeechSynthesis()) {
     setStatus("Speech synthesis is not supported in this browser.", true);
     playButton.disabled = true;
+    actionButton.disabled = true;
     voiceSelect.disabled = true;
   }
 
   playButton.addEventListener("click", function () {
+    if (!isSelectedScenarioUnlocked()) {
+      setStatus("Finish the earlier lesson first.", true);
+      return;
+    }
+
+    startFullPlayback();
+  });
+
+  actionButton.addEventListener("click", function () {
+    if (isPlaying) {
+      stopPlayback();
+      return;
+    }
+
+    if (readyToComplete) {
+      startReflectionReplay();
+    }
+  });
+
+  completeButton.addEventListener("click", function () {
+    if (!readyToComplete) {
+      return;
+    }
+
     const scenario = getSelectedScenario();
+
+    markScenarioComplete(scenario.id);
+
     readyToComplete = false;
-    completeButton.disabled = true;
-    stopButton.disabled = false;
-    playButton.disabled = true;
+    isPlaying = false;
+    currentPlaybackMode = "idle";
     activePhase = "";
+    completedPhases = [];
+    selectNextScenarioAfterCompletion();
+    renderScenarioCards();
+    renderSelectedScenario();
     renderSegmentList();
+    syncControls("idle");
+
+    if (completedScenarioIds.length === scenarios.length) {
+      phaseChipElement.textContent = "All lessons complete";
+      setStatus("All four scenarios are complete. Replace this with Person 2's markComplete call.", false);
+      return;
+    }
+
+    phaseChipElement.textContent = "Next lesson unlocked";
+    setStatus("Scenario marked complete. Replace this with Person 2's markComplete call.", false);
+  });
+
+  resetProgressButton.addEventListener("click", function () {
+    pipeline.stop();
+    completedScenarioIds = [];
+    persistCompletedScenarioIds();
+    selectedScenarioId = scenarios[0].id;
+    readyToComplete = false;
+    isPlaying = false;
+    currentPlaybackMode = "idle";
+    activePhase = "";
+    completedPhases = [];
+    renderScenarioCards();
+    renderSelectedScenario();
+    renderSegmentList();
+    syncControls("idle");
+    phaseChipElement.textContent = "Waiting to start";
+    setStatus("Demo progress reset.", false);
+  });
+
+  voiceSelect.addEventListener("change", function () {
+    pipeline.setPreferredVoiceName(voiceSelect.value);
+    setStatus("Voice updated.", false);
+  });
+
+  function startFullPlayback() {
+    const scenario = getSelectedScenario();
+
+    readyToComplete = false;
+    isPlaying = true;
+    currentPlaybackMode = "full";
+    activePhase = "";
+    completedPhases = [];
+    renderSegmentList();
+    renderScenarioCards();
+    syncControls("playing");
     setStatus("Playing " + scenario.title + ".", false);
     phaseChipElement.textContent = "Starting lesson";
 
-    pipeline.playScenario(scenario, {
+    pipeline.playScenario(scenario, buildPlaybackCallbacks("full")).catch(handlePlaybackError);
+  }
+
+  function startReflectionReplay() {
+    const scenario = getSelectedScenario();
+
+    readyToComplete = false;
+    isPlaying = true;
+    currentPlaybackMode = "reflection";
+    activePhase = "";
+    completedPhases = ["dialogue", "narration", "key_phrase"];
+    renderSegmentList();
+    renderScenarioCards();
+    syncControls("playing");
+    setStatus("Replaying the reflection question.", false);
+    phaseChipElement.textContent = "Replaying reflection";
+
+    pipeline.playReflectionQuestion(scenario, buildPlaybackCallbacks("reflection")).catch(handlePlaybackError);
+  }
+
+  function stopPlayback() {
+    const stoppedMode = currentPlaybackMode;
+
+    pipeline.stop();
+    isPlaying = false;
+    currentPlaybackMode = "idle";
+    activePhase = "";
+
+    if (stoppedMode === "reflection") {
+      readyToComplete = true;
+      completedPhases = segmentOrder.slice();
+      renderSegmentList();
+      renderScenarioCards();
+      syncControls("ready");
+      phaseChipElement.textContent = "Reflection replay stopped";
+      setStatus("Reflection replay stopped. Tap Hear Again or I Understood.", false);
+      return;
+    }
+
+    readyToComplete = false;
+    completedPhases = [];
+    renderSegmentList();
+    renderScenarioCards();
+    syncControls("idle");
+    phaseChipElement.textContent = "Stopped";
+    setStatus("Playback stopped.", false);
+  }
+
+  function buildPlaybackCallbacks(mode) {
+    return {
       onSegmentStart: function (event) {
         activePhase = event.phase;
+
+        if (mode === "reflection") {
+          completedPhases = ["dialogue", "narration", "key_phrase"];
+        } else {
+          completedPhases = segmentOrder.slice(0, segmentOrder.indexOf(event.phase));
+        }
+
         renderSegmentList();
       },
       onStateChange: function (event) {
@@ -56,61 +194,61 @@
         }
 
         if (event.status === "complete") {
-          phaseChipElement.textContent = "Lesson finished";
-          setStatus("Lesson finished. Tap Got it to mark completion.", false);
+          phaseChipElement.textContent = mode === "full" ? "Lesson finished" : "Reflection replay finished";
+          setStatus(
+            mode === "full"
+              ? "Lesson finished. Tap I Understood or Hear Again."
+              : "Reflection replayed. Tap I Understood or Hear Again.",
+            false
+          );
         }
       },
       onComplete: function () {
         readyToComplete = true;
-        playButton.disabled = false;
-        stopButton.disabled = true;
-        completeButton.disabled = false;
+        isPlaying = false;
+        currentPlaybackMode = "idle";
         activePhase = "";
+        completedPhases = segmentOrder.slice();
         renderSegmentList();
+        renderScenarioCards();
+        syncControls("ready");
       }
-    }).catch(function (error) {
-      playButton.disabled = false;
-      stopButton.disabled = true;
-      completeButton.disabled = true;
-      activePhase = "";
-      renderSegmentList();
-      phaseChipElement.textContent = "Playback failed";
-      setStatus(error.message, true);
-    });
-  });
+    };
+  }
 
-  stopButton.addEventListener("click", function () {
-    pipeline.stop();
+  function handlePlaybackError(error) {
+    const failedMode = currentPlaybackMode;
+
+    isPlaying = false;
+    currentPlaybackMode = "idle";
     activePhase = "";
-    renderSegmentList();
-    playButton.disabled = false;
-    stopButton.disabled = true;
-    completeButton.disabled = !readyToComplete;
-    phaseChipElement.textContent = "Stopped";
-    setStatus("Playback stopped.", false);
-  });
 
-  completeButton.addEventListener("click", function () {
-    const scenario = getSelectedScenario();
-    markScenarioComplete(scenario.id);
+    if (failedMode === "reflection") {
+      readyToComplete = true;
+      completedPhases = segmentOrder.slice();
+      renderSegmentList();
+      renderScenarioCards();
+      syncControls("ready");
+      phaseChipElement.textContent = "Reflection replay failed";
+      setStatus("Reflection replay failed. Tap Hear Again or I Understood.", true);
+      return;
+    }
+
     readyToComplete = false;
-    completeButton.disabled = true;
-    phaseChipElement.textContent = "Completion sent";
-    setStatus("Scenario marked complete. Replace this with Person 2's markComplete call.", false);
-  });
-
-  resetProgressButton.addEventListener("click", function () {
-    completedScenarioIds = [];
-    persistCompletedScenarioIds();
+    completedPhases = [];
+    renderSegmentList();
     renderScenarioCards();
-    renderSelectedScenario();
-    setStatus("Demo progress reset.", false);
-  });
+    syncControls("idle");
+    phaseChipElement.textContent = "Playback failed";
+    setStatus(error.message, true);
+  }
 
-  voiceSelect.addEventListener("change", function () {
-    pipeline.setPreferredVoiceName(voiceSelect.value);
-    setStatus("Voice updated.", false);
-  });
+  function syncControls(mode) {
+    playButton.disabled = mode === "playing" || !isSelectedScenarioUnlocked();
+    actionButton.disabled = mode === "idle";
+    actionButton.textContent = mode === "ready" ? "Hear Again" : "Stop";
+    completeButton.disabled = mode !== "ready";
+  }
 
   function loadCompletedScenarioIds() {
     try {
@@ -121,6 +259,16 @@
     }
   }
 
+  function normalizeCompletedScenarioIds(ids) {
+    return scenarios
+      .map(function (scenario) {
+        return scenario.id;
+      })
+      .filter(function (scenarioId) {
+        return Array.isArray(ids) && ids.indexOf(scenarioId) !== -1;
+      });
+  }
+
   function persistCompletedScenarioIds() {
     globalThis.localStorage.setItem(storageKey, JSON.stringify(completedScenarioIds));
   }
@@ -129,14 +277,37 @@
     return globalThis.CareVoiceScenarios.findScenarioById(selectedScenarioId);
   }
 
+  function getSelectedScenarioIndex() {
+    return scenarios.findIndex(function (scenario) {
+      return scenario.id === selectedScenarioId;
+    });
+  }
+
+  function isScenarioUnlocked(index) {
+    return index <= completedScenarioIds.length;
+  }
+
+  function isSelectedScenarioUnlocked() {
+    return isScenarioUnlocked(getSelectedScenarioIndex());
+  }
+
+  function ensureSelectedScenarioIsUnlocked() {
+    const selectedIndex = getSelectedScenarioIndex();
+
+    if (selectedIndex === -1 || !isScenarioUnlocked(selectedIndex)) {
+      selectedScenarioId = scenarios[Math.min(completedScenarioIds.length, scenarios.length - 1)].id;
+    }
+  }
+
   function markScenarioComplete(scenarioId) {
     if (completedScenarioIds.indexOf(scenarioId) === -1) {
-      completedScenarioIds = completedScenarioIds.concat(scenarioId);
+      completedScenarioIds = normalizeCompletedScenarioIds(completedScenarioIds.concat(scenarioId));
       persistCompletedScenarioIds();
     }
+  }
 
-    renderScenarioCards();
-    renderSelectedScenario();
+  function selectNextScenarioAfterCompletion() {
+    selectedScenarioId = scenarios[Math.min(completedScenarioIds.length, scenarios.length - 1)].id;
   }
 
   function hydrateVoices() {
@@ -170,50 +341,61 @@
   }
 
   function renderScenarioCards() {
+    ensureSelectedScenarioIsUnlocked();
     scenarioListElement.innerHTML = "";
 
-    scenarios.forEach(function (scenario) {
+    scenarios.forEach(function (scenario, index) {
       const button = document.createElement("button");
       const done = completedScenarioIds.indexOf(scenario.id) !== -1;
+      const unlocked = isScenarioUnlocked(index);
+      const tagLabel = done ? "Completed" : unlocked ? "Ready" : "Locked";
 
       button.type = "button";
       button.className = "scenario-card";
       button.dataset.selected = String(scenario.id === selectedScenarioId);
+      button.dataset.locked = String(!unlocked);
+      button.disabled = !unlocked || isPlaying;
       button.innerHTML = [
         "<h3>" + scenario.title + "</h3>",
         "<p>" + scenario.context + "</p>",
         "<div class=\"scenario-meta\">",
         "<span>" + scenario.dialogue.length + " dialogue turns</span>",
-        "<span class=\"scenario-tag\" data-done=\"" + String(done) + "\">" + (done ? "Completed" : "Ready") + "</span>",
+        "<span class=\"scenario-tag\" data-done=\"" + String(done) + "\">" + tagLabel + "</span>",
         "</div>"
       ].join("");
 
-      button.addEventListener("click", function () {
-        selectedScenarioId = scenario.id;
-        readyToComplete = false;
-        completeButton.disabled = true;
-        activePhase = "";
-        playButton.disabled = false;
-        stopButton.disabled = true;
-        setStatus("Selected " + scenario.title + ".", false);
-        phaseChipElement.textContent = "Waiting to start";
-        renderScenarioCards();
-        renderSelectedScenario();
-        renderSegmentList();
-      });
+      if (unlocked && !isPlaying) {
+        button.addEventListener("click", function () {
+          selectedScenarioId = scenario.id;
+          readyToComplete = false;
+          currentPlaybackMode = "idle";
+          activePhase = "";
+          completedPhases = [];
+          renderScenarioCards();
+          renderSelectedScenario();
+          renderSegmentList();
+          syncControls("idle");
+          phaseChipElement.textContent = "Waiting to start";
+          setStatus("Selected " + scenario.title + ".", false);
+        });
+      }
 
       scenarioListElement.appendChild(button);
     });
   }
 
   function renderSelectedScenario() {
+    ensureSelectedScenarioIsUnlocked();
+
     const scenario = getSelectedScenario();
+    const scenarioIndex = getSelectedScenarioIndex();
     const done = completedScenarioIds.indexOf(scenario.id) !== -1;
+    const unlocked = isScenarioUnlocked(scenarioIndex);
 
     titleElement.textContent = scenario.title;
     contextElement.textContent = scenario.context;
     completionChipElement.dataset.complete = String(done);
-    completionChipElement.textContent = done ? "Completed in demo" : "Not completed";
+    completionChipElement.textContent = done ? "Completed in demo" : unlocked ? "Unlocked" : "Locked";
   }
 
   function renderSegmentList() {
@@ -226,7 +408,7 @@
       const item = document.createElement("li");
       item.className = "segment-item";
       item.dataset.active = String(segment.id === activePhase);
-      item.dataset.done = String(segmentOrder.indexOf(segment.id) < segmentOrder.indexOf(activePhase));
+      item.dataset.done = String(completedPhases.indexOf(segment.id) !== -1);
       item.innerHTML = [
         "<span class=\"segment-label\">" + segment.label + "</span>",
         "<span class=\"segment-text\">" + segment.text + "</span>"

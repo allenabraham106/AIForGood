@@ -16,7 +16,8 @@
         <h1>Role 3 Audio Pipeline Demo</h1>
         <p class="lede">
           Tap a lesson and the browser will speak the dialogue, cultural tip, key phrase,
-          and reflection question in sequence.
+          and reflection question in sequence. After the lesson ends, use Hear Again or
+          I Understood to continue the flow.
         </p>
         <div class="status-row">
           <span class="status-pill" data-status-pill>Idle</span>
@@ -53,11 +54,11 @@
             <button class="primary-button" type="button" data-play-button>
               Play lesson
             </button>
-            <button class="secondary-button" type="button" data-stop-button disabled>
+            <button class="secondary-button" type="button" data-action-button disabled>
               Stop
             </button>
             <button class="ghost-button" type="button" data-complete-button disabled>
-              Got it
+              I Understood
             </button>
           </div>
 
@@ -68,8 +69,8 @@
 
           <div class="integration-note">
             <strong>Integration note:</strong>
-            Replace the demo completion handler with Person 2's
-            <code>markComplete(scenarioId)</code>.
+            Hear Again replays only the reflection question. I Understood is the place to
+            call <code>markComplete(scenarioId)</code> from Person 2.
           </div>
         </section>
       </section>

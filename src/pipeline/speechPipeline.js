@@ -3,7 +3,7 @@
     pauseMs: 1000,
     dialogueRate: 0.96,
     narrationRate: 0.92,
-    keyPhraseRate: 0.82,
+    keyPhraseRate: 0.85,
     reflectionRate: 0.88,
     pitch: 1,
     volume: 1,
@@ -182,7 +182,7 @@
       });
     }
 
-    async function playScenario(scenario, callbacks) {
+    async function playSegments(scenario, segments, callbacks) {
       const safeCallbacks = callbacks || {};
 
       if (!supportsSpeechSynthesis()) {
@@ -193,7 +193,6 @@
       const currentRunId = ++runId;
       const voices = await loadVoices();
       const voice = chooseVoice(voices, settings.preferredVoiceName);
-      const segments = buildSegments(scenario);
 
       if (safeCallbacks.onStateChange) {
         safeCallbacks.onStateChange({
@@ -269,12 +268,29 @@
       }
     }
 
+    function playScenario(scenario, callbacks) {
+      return playSegments(scenario, buildSegments(scenario), callbacks);
+    }
+
+    function playReflectionQuestion(scenario, callbacks) {
+      const reflectionSegment = buildSegments(scenario).find(function (segment) {
+        return segment.id === "reflection";
+      });
+
+      if (!reflectionSegment) {
+        return Promise.reject(new Error("Reflection question segment is missing."));
+      }
+
+      return playSegments(scenario, [reflectionSegment], callbacks);
+    }
+
     function setPreferredVoiceName(name) {
       settings.preferredVoiceName = name || "";
     }
 
     return {
       playScenario: playScenario,
+      playReflectionQuestion: playReflectionQuestion,
       stop: stop,
       loadVoices: loadVoices,
       setPreferredVoiceName: setPreferredVoiceName,
