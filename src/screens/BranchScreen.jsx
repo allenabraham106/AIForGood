@@ -76,24 +76,6 @@ export default function BranchScreen() {
 
   return (
     <div className={`branch-screen branch-screen--level-${level}`}>
-      {showDemoSwitcher && (
-        <div className="branch-demo" role="group" aria-label="Demo level selector">
-          <span className="branch-demo-label">Demo:</span>
-          <div className="branch-demo-btns">
-            {[1, 2, 3, 4].map((n) => (
-              <button
-                key={n}
-                type="button"
-                className={level === n ? 'active' : ''}
-                onClick={() => setDemoLevel(n)}
-                aria-pressed={level === n}
-              >
-                {n}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
       {showSnowflakes && <Snowflakes />}
       {showStars && <Stars variant={starsVariant} />}
       {level === 3 && (
@@ -106,6 +88,9 @@ export default function BranchScreen() {
           <LeafLogo size={28} className="branch-logo" />
           <h1 className="branch-title">Branch</h1>
           <span className="branch-level-badge">Level {level}</span>
+          <a href="/demo/" className="branch-demo-link" aria-label="Open CareVoice audio demo">
+            Demo
+          </a>
         </div>
         <div className="branch-progress-bar">
           <div className="branch-progress-fill" style={{ width: `${overallProgress * 100}%` }} />
@@ -167,11 +152,26 @@ export default function BranchScreen() {
           </button>
         )})}
       </nav>
-      <footer className="branch-footer">
-        <a href="/demo/" className="branch-demo-link" aria-label="Open CareVoice audio demo">
-          CareVoice audio demo
-        </a>
-      </footer>
+      {showDemoSwitcher && (
+        <footer className="branch-footer">
+          <div className="branch-demo-box">
+            <span className="branch-demo-label">Demo:</span>
+            <div className="branch-demo-btns">
+              {[1, 2, 3, 4].map((n) => (
+                <button
+                  key={n}
+                  type="button"
+                  className={level === n ? 'active' : ''}
+                  onClick={() => setDemoLevel(n)}
+                  aria-pressed={level === n}
+                >
+                  {n}
+                </button>
+              ))}
+            </div>
+          </div>
+        </footer>
+      )}
     </div>
   )
 }
