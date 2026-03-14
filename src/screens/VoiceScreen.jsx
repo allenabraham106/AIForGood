@@ -83,8 +83,9 @@ export default function VoiceScreen() {
         }
       } else {
         const msg = data.error || data.detail || data.hint
+        const detail = data.detail && data.detail !== msg ? data.detail : ""
         if (msg) {
-          setAnswer(msg)
+          setAnswer(detail ? `${msg}: ${detail}` : msg)
         } else if (res.status === 404) {
           setAnswer("Voice API not found. Run 'npx vercel dev' for local API, or check deployment.")
         } else {

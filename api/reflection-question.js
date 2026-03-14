@@ -42,7 +42,7 @@ export default async function handler(req, res) {
 
   try {
     const response = await ai.models.generateContent({
-      model: "gemini-2.0-flash",
+      model: "gemini-3-flash-preview",
       contents: `${INSTRUCTION}\n\nGenerate one reflection question for this scenario:\n\n${promptContext}`,
       config: {
         maxOutputTokens: 60,
