@@ -1,0 +1,61 @@
+:root {
+  /* Branch color palette - calming greens, culturally inclusive */
+  --bg-dark: #1a3d2e;
+  --bg-card: #234a38;
+  --accent-light: #7cb87c;
+  --accent-bright: #9ed89e;
+  --accent-orange: #e8a54b;
+  --accent-blue: #5b9bd5;
+  --accent-purple: #8b7cb8;
+  --text-light: #f0f4f0;
+  --text-muted: #a8c4a8;
+  --lock-gold: #d4a84b;
+  --border-subtle: rgba(156, 200, 156, 0.3);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+  overflow-x: hidden;
+}
+
+body {
+  font-family: 'Nunito', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--bg-dark);
+  color: var(--text-light);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#root {
+  min-height: 100%;
+  width: 100%;
+  max-width: 100%;
+  margin: 0 auto;
+  position: relative;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+  background: none;
+}
+
+button:focus-visible {
+  outline: 2px solid var(--accent-light);
+  outline-offset: 2px;
+}
+
+/* Touch-friendly tap targets */
+@media (hover: none) {
+  button, a {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}

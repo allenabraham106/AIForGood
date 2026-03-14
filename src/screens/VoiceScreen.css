@@ -1,0 +1,160 @@
+.voice-screen {
+  min-height: 100vh;
+  padding: 1rem 1.5rem 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: var(--bg-dark);
+}
+
+.voice-header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+}
+
+.voice-back,
+.voice-speaker {
+  color: var(--text-light);
+  padding: 0.5rem;
+  margin: -0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.voice-back:hover,
+.voice-speaker:hover {
+  color: var(--accent-light);
+}
+
+.voice-dots {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.voice-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--text-muted);
+  opacity: 0.5;
+}
+
+.voice-dot.active {
+  background: var(--accent-orange);
+  opacity: 1;
+}
+
+.voice-timer {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--accent-light);
+  margin-bottom: 2rem;
+}
+
+.voice-card {
+  width: 100%;
+  max-width: 280px;
+  background: var(--bg-card);
+  border: 2px solid var(--border-subtle);
+  border-radius: 16px;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.voice-avatar {
+  width: 64px;
+  height: 64px;
+  color: var(--accent-orange);
+}
+
+.voice-avatar svg {
+  width: 100%;
+  height: 100%;
+}
+
+.voice-waveform {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  height: 48px;
+}
+
+.voice-bar {
+  width: 6px;
+  min-height: 8px;
+  background: var(--accent-orange);
+  border-radius: 3px;
+  transition: height 0.1s ease;
+}
+
+.voice-mic-btn {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  border: 3px solid var(--accent-light);
+  color: var(--text-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  transition: transform 0.15s ease, background 0.2s ease;
+}
+
+.voice-mic-btn:hover {
+  background: rgba(124, 184, 124, 0.15);
+}
+
+.voice-mic-btn:active {
+  transform: scale(0.95);
+}
+
+.voice-next-btn {
+  margin-top: 1.5rem;
+  width: 100%;
+  max-width: 320px;
+  height: 52px;
+  background: var(--bg-card);
+  border: 2px solid var(--accent-light);
+  border-radius: 14px;
+  color: var(--text-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s ease, transform 0.15s ease;
+}
+
+.voice-next-btn:hover {
+  background: rgba(124, 184, 124, 0.2);
+}
+
+.voice-next-btn:active {
+  transform: scale(0.98);
+}
+
+.voice-progress-dots {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 2rem;
+}
+
+.voice-progress-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--text-muted);
+  opacity: 0.4;
+}
+
+.voice-progress-dot.filled {
+  background: var(--accent-light);
+  opacity: 1;
+}

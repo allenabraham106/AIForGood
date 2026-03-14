@@ -1,0 +1,128 @@
+.branch-screen {
+  min-height: 100vh;
+  min-height: 100dvh;
+  padding: 1rem 1.25rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-dark);
+}
+
+.branch-header {
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.branch-logo {
+  color: var(--accent-light);
+  margin-right: 0.5rem;
+  vertical-align: middle;
+}
+
+.branch-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--accent-bright);
+  display: inline-block;
+  margin-bottom: 0.5rem;
+}
+
+.branch-progress-bar {
+  height: 6px;
+  background: var(--bg-card);
+  border-radius: 3px;
+  overflow: hidden;
+  max-width: 280px;
+  margin: 0 auto;
+}
+
+.branch-progress-fill {
+  height: 100%;
+  background: var(--accent-light);
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+.branch-tree-container {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem 1rem;
+}
+
+.branch-tree-svg {
+  width: 100%;
+  height: 100%;
+  max-height: min(60vh, 500px);
+  object-fit: contain;
+}
+
+.branch-tree-svg .tree-node {
+  transition: transform 0.15s ease;
+}
+
+.branch-tree-svg .tree-node.clickable:hover {
+  transform: scale(1.1);
+}
+
+.branch-tree-svg .tree-node.clickable:active {
+  transform: scale(0.95);
+}
+
+.branch-categories {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.75rem;
+  margin-top: auto;
+}
+
+.category-btn {
+  aspect-ratio: 1;
+  background: var(--bg-card);
+  border: 2px solid var(--border-subtle);
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem;
+  transition: transform 0.15s ease, border-color 0.2s ease;
+}
+
+.category-btn:not(.locked):hover {
+  transform: scale(1.03);
+  border-color: var(--accent-light);
+}
+
+.category-btn:not(.locked):active {
+  transform: scale(0.98);
+}
+
+.category-btn.locked {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.category-lock {
+  position: absolute;
+  top: 0.4rem;
+  right: 0.4rem;
+  color: var(--lock-gold);
+}
+
+.category-btn {
+  position: relative;
+}
+
+.category-icon {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.category-progress {
+  font-size: 0.85rem;
+  font-weight: 600;
+}

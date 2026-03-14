@@ -1,0 +1,126 @@
+.phrase-screen {
+  min-height: 100vh;
+  padding: 1rem 1.5rem 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: var(--bg-dark);
+  background-image: radial-gradient(ellipse 80% 50% at 50% 0%, rgba(124, 184, 124, 0.08), transparent);
+}
+
+.phrase-header {
+  width: 100%;
+  display: flex;
+  justify-content: flex-start;
+  margin-bottom: 0.5rem;
+}
+
+.phrase-back {
+  color: var(--text-light);
+  padding: 0.5rem;
+  margin: -0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.phrase-back:hover {
+  color: var(--accent-light);
+}
+
+.phrase-logo {
+  color: var(--accent-light);
+  margin-bottom: 1.5rem;
+}
+
+.phrase-card {
+  width: 100%;
+  max-width: 340px;
+  background: var(--bg-card);
+  border: 2px solid var(--border-subtle);
+  border-radius: 16px;
+  padding: 2rem 1.5rem;
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.phrase-text {
+  font-size: 1.25rem;
+  line-height: 1.6;
+  color: var(--text-light);
+  font-style: italic;
+  margin-bottom: 1.5rem;
+}
+
+.phrase-play-btn {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: var(--accent-light);
+  color: var(--bg-dark);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+  transition: transform 0.15s ease, opacity 0.2s ease;
+}
+
+.phrase-play-btn:hover:not(:disabled) {
+  transform: scale(1.05);
+}
+
+.phrase-play-btn:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.phrase-play-btn:disabled {
+  opacity: 0.8;
+}
+
+.phrase-progress-ring {
+  width: 80px;
+  height: 80px;
+  margin-bottom: 2rem;
+}
+
+.phrase-progress-ring svg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.phrase-progress-bg {
+  fill: none;
+  stroke: var(--bg-card);
+  stroke-width: 3;
+}
+
+.phrase-progress-fill {
+  fill: none;
+  stroke: var(--accent-light);
+  stroke-width: 3;
+  stroke-linecap: round;
+  transition: stroke-dasharray 0.3s ease;
+}
+
+.phrase-next-btn {
+  width: 100%;
+  max-width: 320px;
+  height: 56px;
+  background: var(--bg-card);
+  border: 2px solid var(--accent-light);
+  border-radius: 14px;
+  color: var(--text-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s ease, transform 0.15s ease;
+}
+
+.phrase-next-btn:hover {
+  background: rgba(124, 184, 124, 0.2);
+}
+
+.phrase-next-btn:active {
+  transform: scale(0.98);
+}
