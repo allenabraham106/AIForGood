@@ -8,10 +8,10 @@ export const SCENARIOS = {
     label: '0/4',
     color: 'blue',
     lessons: [
-      { id: 'b1', prompt: 'They say: Good morning!', phrase: 'Good morning. How are you?', scenario: 'greeting' },
-      { id: 'b2', prompt: 'They ask: Who are you?', phrase: 'My name is ___. I am new.', scenario: 'introduction' },
-      { id: 'b3', prompt: 'They ask: Need help?', phrase: 'Yes, I need help, please.', scenario: 'help' },
-      { id: 'b4', prompt: 'They help you. What do you say?', phrase: 'Thank you.', scenario: 'gratitude' },
+      { id: 'b1', prompt: 'Say it back:', phrase: 'Good morning. How are you?', scenario: 'greeting' },
+      { id: 'b2', prompt: 'Say it back:', phrase: 'My name is ___. I am new.', scenario: 'introduction' },
+      { id: 'b3', prompt: 'Say it back:', phrase: 'Yes, I need help, please.', scenario: 'help' },
+      { id: 'b4', prompt: 'Say it back:', phrase: 'Thank you.', scenario: 'gratitude' },
     ],
   },
   speaking: {
@@ -20,10 +20,10 @@ export const SCENARIOS = {
     label: '0/4',
     color: 'orange',
     lessons: [
-      { id: 's1', prompt: 'They call: Where are you?', phrase: "I'm late. I come soon.", scenario: 'workplace' },
-      { id: 's2', prompt: 'Break time. You ask:', phrase: 'Where is the break room?', scenario: 'workplace' },
-      { id: 's3', prompt: 'You did not hear.', phrase: 'Repeat, please?', scenario: 'workplace' },
-      { id: 's4', prompt: 'You are sick. You tell them:', phrase: 'I am sick. I need tomorrow off.', scenario: 'workplace' },
+      { id: 's1', prompt: 'Say it back:', phrase: "I'm late. I come soon.", scenario: 'workplace' },
+      { id: 's2', prompt: 'Say it back:', phrase: 'Where is the break room?', scenario: 'workplace' },
+      { id: 's3', prompt: 'Say it back:', phrase: 'Repeat, please?', scenario: 'workplace' },
+      { id: 's4', prompt: 'Say it back:', phrase: 'I am sick. I need tomorrow off.', scenario: 'workplace' },
     ],
   },
   community: {
@@ -32,10 +32,10 @@ export const SCENARIOS = {
     label: '0/4',
     color: 'green',
     lessons: [
-      { id: 'c1', prompt: 'They ask: What do you want?', phrase: 'I am looking for work.', scenario: 'employment' },
-      { id: 'c2', prompt: 'First day. You ask:', phrase: 'What time do I start?', scenario: 'workplace' },
-      { id: 'c3', prompt: 'Someone needs help. You say:', phrase: 'I need help. Room twelve.', scenario: 'workplace' },
-      { id: 'c4', prompt: 'You did not understand.', phrase: 'Sorry. Repeat?', scenario: 'workplace' },
+      { id: 'c1', prompt: 'Say it back:', phrase: 'I am looking for work.', scenario: 'employment' },
+      { id: 'c2', prompt: 'Say it back:', phrase: 'What time do I start?', scenario: 'workplace' },
+      { id: 'c3', prompt: 'Say it back:', phrase: 'I need help. Room twelve.', scenario: 'workplace' },
+      { id: 'c4', prompt: 'Say it back:', phrase: 'Sorry. Repeat?', scenario: 'workplace' },
     ],
   },
   progress: {

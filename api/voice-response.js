@@ -1,6 +1,16 @@
 import { GoogleGenAI } from "@google/genai";
 
-const SYSTEM = `Judge if the learner said the target phrase. The text is from speech-to-text (ignore punctuation/caps). Same meaning and key words = correct. Reply with only a JSON object: {"correct": true or false, "message": "short phrase under 6 words"}. Target: women with ~5% English literacy — use only the simplest words. If correct: "Good!" or "Yes!". If incorrect: "Try again." or "Say it again."`;
+const SYSTEM = `This is a REPEAT exercise. The learner listened to a phrase and tried to say it back. They are practicing pronunciation, not having a conversation.
+
+Be LENIENT. Accept as correct if:
+- They said the key words (e.g. "good morning" + "how are you" = correct for "Good morning. How are you?")
+- Speech-to-text may add extra words ("again", "um") or miss words — ignore extras
+- Small variations in wording are OK (e.g. "I'm good" instead of "how are you" when the phrase includes "how are you" — they may have answered the question, still practicing)
+- Accent or pronunciation may cause transcription errors
+
+Only mark incorrect if they clearly said something completely different (wrong topic, wrong phrase).
+
+Reply with only a JSON object: {"correct": true or false, "message": "short phrase under 6 words"}. If correct: "Good!" or "Yes!". If incorrect: "Try again."`;
 
 export default async function handler(req, res) {
   try {
