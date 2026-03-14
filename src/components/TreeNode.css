@@ -1,0 +1,11 @@
+.tree-node {
+  transition: transform 0.2s ease;
+}
+
+.tree-node--clickable:hover {
+  transform: scale(1.1);
+}
+
+.tree-node--clickable:active {
+  transform: scale(0.95);
+}
