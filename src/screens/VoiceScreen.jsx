@@ -32,6 +32,7 @@ export default function VoiceScreen() {
   const [isRecording, setIsRecording] = useState(false)
   const [transcript, setTranscript] = useState('')
   const [answer, setAnswer] = useState('')
+  const [phraseCorrect, setPhraseCorrect] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const recognitionRef = useRef(null)
   const transcriptAccumulatorRef = useRef('')
@@ -43,6 +44,12 @@ export default function VoiceScreen() {
   const nextLesson = scenario?.lessons?.[lessonIndex + 1]
   const totalLessons = scenario?.lessons?.length ?? 4
   const stepProgress = lessonIndex + 1
+
+  useEffect(() => {
+    setPhraseCorrect(false)
+    setAnswer('')
+    setTranscript('')
+  }, [lessonId])
 
   useEffect(() => {
     if (!isRecording) return
@@ -75,6 +82,8 @@ export default function VoiceScreen() {
         // Server returned non-JSON (e.g. 404 HTML)
       }
       if (res.ok && data.answer) {
+        const correct = data.correct === true
+        setPhraseCorrect(correct)
         setAnswer(data.answer)
         if ('speechSynthesis' in window) {
           const u = new SpeechSynthesisUtterance(data.answer)
@@ -135,7 +144,10 @@ export default function VoiceScreen() {
       const text = transcriptAccumulatorRef.current.trim()
       didRequestResponseRef.current = true
       if (text) fetchVoiceResponse(text, lesson?.phrase)
-      else setAnswer('No speech heard. Try again and speak clearly.')
+      else {
+        setPhraseCorrect(false)
+        setAnswer('No speech heard. Try again and speak clearly.')
+      }
     }
     recognition.start()
     recognitionRef.current = recognition
@@ -246,10 +258,10 @@ export default function VoiceScreen() {
           <p className="voice-phrase">{lesson.phrase}</p>
         )}
         {(transcript || answer || isLoading) && (
-          <div className="voice-feedback" aria-live="polite">
+          <div className={`voice-feedback ${answer && !isLoading && !phraseCorrect ? 'voice-feedback-incorrect' : ''}`} aria-live="polite">
             {transcript && <p className="voice-you-said">You said: {transcript}</p>}
             {isLoading && <p className="voice-loading">Thinking…</p>}
-            {answer && !isLoading && <p className="voice-answer">{answer}</p>}
+            {answer && !isLoading && <p className={phraseCorrect ? 'voice-answer' : 'voice-answer voice-answer-incorrect'}>{answer}</p>}
           </div>
         )}
       </motion.div>
@@ -294,9 +306,10 @@ export default function VoiceScreen() {
         <motion.button
           className="voice-next-btn"
           onClick={handleNext}
-          aria-label="Next"
-          whileHover={{ scale: 1.01 }}
-          whileTap={{ scale: 0.98 }}
+          disabled={!phraseCorrect}
+          aria-label={phraseCorrect ? 'Next' : 'Say the phrase correctly to continue'}
+          whileHover={phraseCorrect ? { scale: 1.01 } : {}}
+          whileTap={phraseCorrect ? { scale: 0.98 } : {}}
         >
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden>
             <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />

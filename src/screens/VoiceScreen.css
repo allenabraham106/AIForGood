@@ -308,6 +308,16 @@
   line-height: 1.4;
 }
 
+.voice-answer-incorrect {
+  color: rgba(255, 180, 160, 0.98);
+  font-weight: 600;
+}
+
+.voice-feedback-incorrect {
+  border-color: rgba(255, 120, 100, 0.35);
+  background: rgba(255, 100, 80, 0.08);
+}
+
 /* Mic section — hero focal point, directly below card */
 .voice-mic-section {
   display: flex;
@@ -521,6 +531,12 @@
 
 .voice-next-btn:active {
   transform: scale(0.98);
+}
+
+.voice-next-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
 }
 
 /* ========== SM (640px) — tablet ========== */
