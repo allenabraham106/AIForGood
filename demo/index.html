@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -19,7 +19,7 @@
         <p class="lede">
           Run this through the local demo server so the speaking check can fetch a short-lived
           Azure token safely. The lesson flow still uses browser speech synthesis, but you can
-          now skip the non-practice spoken parts when you only want the key phrase.
+          now skip the non-practice spoken parts when you only want the key phrase, then finish the learner's answer with spoken coaching.
         </p>
         <div class="status-row">
           <span class="status-pill" data-status-pill>Idle</span>
@@ -89,6 +89,7 @@
             <p class="practice-copy">
               If Azure is configured, this uses real pronunciation assessment. The app forces the
               Azure pronunciation path to <code>en-US</code> so syllable feedback can show up.
+              After each attempt, the app speaks a short coaching tip and repeats the weakest word.
               If Azure is not ready, it falls back to the browser transcript matcher.
             </p>
 
@@ -105,12 +106,12 @@
                 Start speaking
               </button>
               <button class="secondary-button" type="button" data-practice-stop-button disabled>
-                Stop listening
+                Finish answer
               </button>
             </div>
 
             <p class="practice-status" data-practice-status>
-              Say the key phrase and we will compare it to the target sentence.
+              Say the key phrase, tap Finish answer, and we will score it with spoken coaching.
             </p>
             <p class="practice-score" data-practice-score>Spoken match: --</p>
 
@@ -141,3 +142,5 @@
     </main>
   </body>
 </html>
+
+

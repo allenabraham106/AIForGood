@@ -5,6 +5,7 @@
     narrationRate: 0.92,
     keyPhraseRate: 0.85,
     reflectionRate: 0.88,
+    coachingRate: 0.82,
     pitch: 1,
     volume: 1,
     preferredVoiceName: ""
@@ -154,6 +155,30 @@
     }).filter(Boolean);
   }
 
+  function normalizeCustomItems(items) {
+    return (Array.isArray(items) ? items : []).map(function (item, index) {
+      if (typeof item === "string") {
+        return {
+          id: "custom-" + index,
+          label: "Voice Feedback",
+          text: item,
+          rate: DEFAULT_SETTINGS.coachingRate,
+          pauseMs: DEFAULT_SETTINGS.pauseMs
+        };
+      }
+
+      return {
+        id: item && item.id ? String(item.id) : "custom-" + index,
+        label: item && item.label ? String(item.label) : "Voice Feedback",
+        text: item && item.text ? String(item.text) : "",
+        rate: item && typeof item.rate === "number" ? item.rate : DEFAULT_SETTINGS.coachingRate,
+        pauseMs: item && typeof item.pauseMs === "number" ? item.pauseMs : DEFAULT_SETTINGS.pauseMs
+      };
+    }).filter(function (item) {
+      return item.text.trim().length > 0;
+    });
+  }
+
   function createSpeechPipeline(options) {
     const settings = Object.assign({}, DEFAULT_SETTINGS, options || {});
     let runId = 0;
@@ -197,14 +222,15 @@
       });
     }
 
-    async function playSegments(scenario, segments, callbacks) {
+    async function playItems(contextId, items, callbacks) {
       const safeCallbacks = callbacks || {};
+      const normalizedItems = normalizeCustomItems(items);
 
       if (!supportsSpeechSynthesis()) {
         throw new Error("Speech synthesis is not supported in this browser.");
       }
 
-      if (!Array.isArray(segments) || segments.length === 0) {
+      if (normalizedItems.length === 0) {
         throw new Error("Choose at least one lesson part to play.");
       }
 
@@ -217,13 +243,13 @@
         safeCallbacks.onStateChange({
           status: "playing",
           phase: "starting",
-          scenarioId: scenario.id,
+          scenarioId: contextId,
           voice: voice ? normalizeVoice(voice) : null
         });
       }
 
-      for (let index = 0; index < segments.length; index += 1) {
-        const segment = segments[index];
+      for (let index = 0; index < normalizedItems.length; index += 1) {
+        const item = normalizedItems[index];
 
         if (currentRunId !== runId) {
           return;
@@ -231,10 +257,10 @@
 
         if (safeCallbacks.onSegmentStart) {
           safeCallbacks.onSegmentStart({
-            scenarioId: scenario.id,
-            phase: segment.id,
-            label: segment.label,
-            text: segment.text,
+            scenarioId: contextId,
+            phase: item.id,
+            label: item.label,
+            text: item.text,
             index: index
           });
         }
@@ -242,29 +268,31 @@
         if (safeCallbacks.onStateChange) {
           safeCallbacks.onStateChange({
             status: "playing",
-            phase: segment.id,
-            scenarioId: scenario.id,
-            text: segment.text,
-            label: segment.label
+            phase: item.id,
+            scenarioId: contextId,
+            text: item.text,
+            label: item.label
           });
         }
 
-        await speakSegment(segment.text, voice, segment.rate);
+        await speakSegment(item.text, voice, item.rate);
 
         if (currentRunId !== runId) {
           return;
         }
 
-        if (index < segments.length - 1 && settings.pauseMs > 0) {
+        const pauseMs = typeof item.pauseMs === "number" ? item.pauseMs : settings.pauseMs;
+
+        if (index < normalizedItems.length - 1 && pauseMs > 0) {
           if (safeCallbacks.onPause) {
             safeCallbacks.onPause({
-              scenarioId: scenario.id,
-              afterPhase: segment.id,
-              pauseMs: settings.pauseMs
+              scenarioId: contextId,
+              afterPhase: item.id,
+              pauseMs: pauseMs
             });
           }
 
-          await delay(settings.pauseMs);
+          await delay(pauseMs);
         }
       }
 
@@ -276,27 +304,43 @@
         safeCallbacks.onStateChange({
           status: "complete",
           phase: "complete",
-          scenarioId: scenario.id
+          scenarioId: contextId
         });
       }
 
       if (safeCallbacks.onComplete) {
         safeCallbacks.onComplete({
-          scenarioId: scenario.id
+          scenarioId: contextId
         });
       }
     }
 
     function playScenario(scenario, callbacks, options) {
-      return playSegments(scenario, selectSegments(scenario, options), callbacks);
+      const segments = selectSegments(scenario, options).map(function (segment) {
+        return {
+          id: segment.id,
+          label: segment.label,
+          text: segment.text,
+          rate: segment.rate,
+          pauseMs: settings.pauseMs
+        };
+      });
+
+      return playItems(scenario.id, segments, callbacks);
     }
 
     function playSegmentIds(scenario, segmentIds, callbacks) {
-      return playSegments(scenario, selectSegments(scenario, { segmentIds: segmentIds }), callbacks);
+      return playScenario(scenario, callbacks, {
+        segmentIds: segmentIds
+      });
     }
 
     function playReflectionQuestion(scenario, callbacks) {
       return playSegmentIds(scenario, ["reflection"], callbacks);
+    }
+
+    function playVoiceCoaching(contextId, items, callbacks) {
+      return playItems(contextId, items, callbacks);
     }
 
     function setPreferredVoiceName(name) {
@@ -307,6 +351,7 @@
       playScenario: playScenario,
       playSegmentIds: playSegmentIds,
       playReflectionQuestion: playReflectionQuestion,
+      playVoiceCoaching: playVoiceCoaching,
       stop: stop,
       loadVoices: loadVoices,
       setPreferredVoiceName: setPreferredVoiceName,

@@ -639,3 +639,14 @@ code {
   color: var(--muted);
   font-weight: 400;
 }
+.practice-badge[data-state="processing"] {
+  background: #eef2ff;
+  border-color: #aab8f0;
+  color: #2f4c95;
+}
+
+.practice-badge[data-state="coaching"] {
+  background: #f8ecd6;
+  border-color: #d6b273;
+  color: #7b4e00;
+}
