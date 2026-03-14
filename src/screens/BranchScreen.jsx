@@ -115,9 +115,9 @@ export default function BranchScreen() {
         <svg viewBox="0 0 100 95" className="branch-tree-svg">
           <defs>
             <radialGradient id="node-glow" cx="50%" cy="50%" r="50%">
-              <stop offset="0%" stopColor="#7ab87a" stopOpacity="0.5" />
-              <stop offset="70%" stopColor="#5a8f5a" stopOpacity="0.2" />
-              <stop offset="100%" stopColor="#4a8a82" stopOpacity="0" />
+              <stop offset="0%" stopColor="#81c784" stopOpacity="0.8" />
+              <stop offset="50%" stopColor="#66bb6a" stopOpacity="0.5" />
+              <stop offset="100%" stopColor="#4caf50" stopOpacity="0" />
             </radialGradient>
           </defs>
           <TreeBranches />

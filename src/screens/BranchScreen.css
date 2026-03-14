@@ -45,7 +45,7 @@
 }
 
 .happy-sun--right {
-  right: 12px;
+  right: 50px;
   left: auto;
 }
 
@@ -91,25 +91,25 @@
 
 .cloud-puff {
   display: block;
-  width: 24px;
-  height: 24px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.9);
-  box-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 0 24px rgba(255, 255, 255, 0.6);
 }
 
 .cloud-puff:nth-child(1) {
-  width: 20px;
-  height: 20px;
+  width: 32px;
+  height: 32px;
   margin-left: 0;
 }
 .cloud-puff:nth-child(2) {
-  width: 32px;
-  height: 28px;
+  width: 48px;
+  height: 42px;
 }
 .cloud-puff:nth-child(3) {
-  width: 22px;
-  height: 22px;
+  width: 34px;
+  height: 34px;
 }
 
 @keyframes cloud-drift {

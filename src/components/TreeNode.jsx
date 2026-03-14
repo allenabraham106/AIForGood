@@ -10,11 +10,11 @@ export default function TreeNode({ node, status, isClickable, onClick }) {
       onClick={onClick}
       style={{ cursor: isClickable ? 'pointer' : 'default' }}
     >
-      {/* Unlocked: soft glow behind solid circle */}
+      {/* Unlocked: bright highlight, stands out on all backgrounds */}
       {isActive && (
         <>
-          <circle cx={node.x} cy={node.y} r="12" fill="url(#node-glow)" opacity="0.6" />
-          <circle cx={node.x} cy={node.y} r="6" fill="#7ab87a" />
+          <circle cx={node.x} cy={node.y} r="14" fill="url(#node-glow)" opacity="0.9" />
+          <circle cx={node.x} cy={node.y} r="6" fill="#fff" stroke="#4caf50" strokeWidth="2" />
         </>
       )}
       {/* Locked: dark green, dormant, no glow */}
