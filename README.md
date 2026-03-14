@@ -2,57 +2,88 @@
 
 CareVoice role 3 starter pipeline for the hackathon demo.
 
-This repo now contains a no-API audio pipeline you can use right away:
+This repo now supports two speaking-check modes:
 
-- Finalized local scenario data for 4 PSW-focused lessons
-- Browser speech synthesis for dialogue, cultural narration, key phrase repetition, and reflection question playback
-- Browser speech intake for optional speaking practice on the key phrase
-- Non-hardcoded word-by-word coloring from red to green based on what the browser heard
-- A simple completion handoff point for the tree and progress logic
-- A tiny browser demo so the team can test the sequencing before the full UI lands
+- Azure pronunciation assessment for real word and syllable scoring
+- Browser fallback matching when Azure is not configured yet
 
-## What you do not need yet
+The lesson playback path is still browser speech synthesis for:
 
-- No Rohingya API
-- No text-to-speech API
-- No login
-- No database
+- dialogue
+- cultural narration
+- key phrase repetition
+- reflection question playback
 
-## Honest limitation
+You can also switch lesson audio between:
 
-The new speaking check is real, but it is not true phoneme-level pronunciation scoring.
-It uses browser speech recognition to hear what the learner said, then compares the heard transcript to the target key phrase and colors each target word from red to green based on match quality.
-That means it works as a practical spoken-match check, but it should not be pitched as a clinical pronunciation assessment.
-
-Speech recognition support is browser-dependent and usually works best in Chrome or Edge with microphone permission enabled.
-In many browsers it also depends on a network-backed recognition service even though speech synthesis can run locally.
+- full lesson
+- key phrase plus reflection
+- key phrase only
 
 ## Files
 
+- `server.js`: local static server plus short-lived Azure token endpoint
+- `.env.example`: copy this to `.env.local` and add your Azure values
 - `src/pipeline/scenarios.js`: scenario content plus future prompt context helper
-- `src/pipeline/speechPipeline.js`: browser speech sequencer with reflection replay support
-- `src/pipeline/speechPractice.js`: browser speech intake plus scoring and word coloring logic
+- `src/pipeline/speechPipeline.js`: browser speech sequencer with replay support and segment filtering
+- `src/pipeline/speechPractice.js`: Azure pronunciation path plus browser fallback logic
 - `demo/index.html`: quick demo page
 - `demo/app.js`: demo wiring, sequential unlocks, speaking check, and completion callback placeholder
 - `demo/styles.css`: lightweight styling for the demo page
 
-## Quick test
+## Where to put the Azure key
 
-1. Open `demo/index.html` in a browser.
-2. Click the unlocked scenario card.
-3. Click `Play lesson`.
-4. Listen for: dialogue -> narration -> key phrase -> reflection question.
-5. Click `Hear Again` to replay only the reflection question.
-6. Click `Start speaking` and say the key phrase.
-7. Look at the red-to-green word colors and transcript.
-8. Click `I Understood` to simulate the completion handoff and unlock the next lesson.
+1. Copy `.env.example` to `.env.local`.
+2. Paste one of your Azure Speech keys into `AZURE_SPEECH_KEY`.
+3. Set `AZURE_SPEECH_REGION` to your Speech resource region, for example `canadacentral`.
+4. Leave `AZURE_SPEECH_LANGUAGE=en-US` so Azure can return syllable groups.
+5. Leave `AZURE_SPEECH_ENABLE_PROSODY=false` for the free-safe setup.
 
-The audio and speech intake must be started by a user click because browsers block autoplay and microphone access without interaction.
+Example:
+
+```env
+AZURE_SPEECH_KEY=your_key_here
+AZURE_SPEECH_REGION=canadacentral
+AZURE_SPEECH_LANGUAGE=en-US
+AZURE_SPEECH_ENABLE_PROSODY=false
+PORT=3000
+```
+
+Do not put the raw key into `demo/app.js` or `demo/index.html`.
+The browser fetches a short-lived token from `server.js`, so the key stays in `.env.local`.
+
+## Run it
+
+1. From the repo root, run `node server.js`.
+2. Open `http://127.0.0.1:3000/demo/`.
+3. Allow microphone access.
+4. Choose the lesson audio mode you want.
+5. Click `Play lesson` for the lesson flow.
+6. Click `Start speaking` for the Azure speaking check.
+
+## What happens in each speaking mode
+
+If Azure is configured:
+- The app asks the local server for a short-lived Azure token.
+- Azure grades the spoken key phrase.
+- Words are colored red to green using Azure pronunciation scores.
+- If Azure returns syllables, they appear in the `Weakest sounds` section.
+- If Azure returns phonemes without syllables, the app shows those instead.
+
+If Azure is not configured:
+- The app falls back to the browser speech recognizer.
+- It compares the heard transcript to the target phrase.
+- Word coloring still works, but it is transcript-match quality, not true pronunciation scoring.
+
+## Honest limitation
+
+The Azure path still needs a real browser run with your own key and microphone to fully verify end to end.
+The browser fallback path works without Azure, but it should not be pitched as a phoneme-level pronunciation assessment.
 
 ## Team handoff
 
 Person 1:
-- Trigger `pipeline.playScenario(selectedScenario, callbacks)` from the main play button.
+- Trigger `pipeline.playScenario(selectedScenario, callbacks, options)` from the main play button.
 - Use the `onStateChange` callback to drive waveform or active-step UI.
 
 Person 2:

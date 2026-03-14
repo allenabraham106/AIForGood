@@ -139,6 +139,21 @@
     ];
   }
 
+  function selectSegments(scenario, options) {
+    const allSegments = buildSegments(scenario);
+    const safeOptions = options || {};
+
+    if (!Array.isArray(safeOptions.segmentIds) || safeOptions.segmentIds.length === 0) {
+      return allSegments;
+    }
+
+    return safeOptions.segmentIds.map(function (segmentId) {
+      return allSegments.find(function (segment) {
+        return segment.id === segmentId;
+      }) || null;
+    }).filter(Boolean);
+  }
+
   function createSpeechPipeline(options) {
     const settings = Object.assign({}, DEFAULT_SETTINGS, options || {});
     let runId = 0;
@@ -187,6 +202,10 @@
 
       if (!supportsSpeechSynthesis()) {
         throw new Error("Speech synthesis is not supported in this browser.");
+      }
+
+      if (!Array.isArray(segments) || segments.length === 0) {
+        throw new Error("Choose at least one lesson part to play.");
       }
 
       stop();
@@ -268,20 +287,16 @@
       }
     }
 
-    function playScenario(scenario, callbacks) {
-      return playSegments(scenario, buildSegments(scenario), callbacks);
+    function playScenario(scenario, callbacks, options) {
+      return playSegments(scenario, selectSegments(scenario, options), callbacks);
+    }
+
+    function playSegmentIds(scenario, segmentIds, callbacks) {
+      return playSegments(scenario, selectSegments(scenario, { segmentIds: segmentIds }), callbacks);
     }
 
     function playReflectionQuestion(scenario, callbacks) {
-      const reflectionSegment = buildSegments(scenario).find(function (segment) {
-        return segment.id === "reflection";
-      });
-
-      if (!reflectionSegment) {
-        return Promise.reject(new Error("Reflection question segment is missing."));
-      }
-
-      return playSegments(scenario, [reflectionSegment], callbacks);
+      return playSegmentIds(scenario, ["reflection"], callbacks);
     }
 
     function setPreferredVoiceName(name) {
@@ -290,6 +305,7 @@
 
     return {
       playScenario: playScenario,
+      playSegmentIds: playSegmentIds,
       playReflectionQuestion: playReflectionQuestion,
       stop: stop,
       loadVoices: loadVoices,

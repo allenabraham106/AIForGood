@@ -1,0 +1,9 @@
+{
+  "name": "carevoice-role3-demo",
+  "private": true,
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "check": "node --check server.js && node --check src/pipeline/scenarios.js && node --check src/pipeline/speechPipeline.js && node --check src/pipeline/speechPractice.js && node --check demo/app.js"
+  }
+}

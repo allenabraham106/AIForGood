@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="./styles.css" />
     <script src="../src/pipeline/scenarios.js" defer></script>
     <script src="../src/pipeline/speechPipeline.js" defer></script>
+    <script src="https://aka.ms/csspeech/jsbrowserpackageraw" defer></script>
     <script src="../src/pipeline/speechPractice.js" defer></script>
     <script src="./app.js" defer></script>
   </head>
@@ -16,15 +17,23 @@
         <p class="eyebrow">CareVoice</p>
         <h1>Role 3 Audio Pipeline Demo</h1>
         <p class="lede">
-          Tap a lesson and the browser will speak the dialogue, cultural tip, key phrase,
-          and reflection question in sequence. After the lesson ends, use Hear Again,
-          try the speaking check, or tap I Understood to continue the flow.
+          Run this through the local demo server so the speaking check can fetch a short-lived
+          Azure token safely. The lesson flow still uses browser speech synthesis, but you can
+          now skip the non-practice spoken parts when you only want the key phrase.
         </p>
         <div class="status-row">
           <span class="status-pill" data-status-pill>Idle</span>
           <label class="voice-picker">
             Voice
             <select data-voice-select></select>
+          </label>
+          <label class="voice-picker">
+            Lesson audio
+            <select data-lesson-mode>
+              <option value="full">Full lesson</option>
+              <option value="practice">Key phrase + reflection</option>
+              <option value="key_phrase_only">Key phrase only</option>
+            </select>
           </label>
         </div>
       </section>
@@ -74,13 +83,19 @@
                 <p class="detail-label practice-label">Speaking Check</p>
                 <h3>Say the key phrase</h3>
               </div>
-              <span class="practice-badge" data-practice-badge>Ready</span>
+              <span class="practice-badge" data-practice-badge>Checking</span>
             </div>
 
             <p class="practice-copy">
-              This compares what the browser hears with the target phrase and colors each
-              word from red to green.
+              If Azure is configured, this uses real pronunciation assessment. The app forces the
+              Azure pronunciation path to <code>en-US</code> so syllable feedback can show up.
+              If Azure is not ready, it falls back to the browser transcript matcher.
             </p>
+
+            <div class="practice-meta-row">
+              <span class="practice-provider" data-practice-provider>Checking provider</span>
+              <span class="practice-metrics" data-practice-metrics>Checking scoring mode</span>
+            </div>
 
             <p class="practice-subtitle">Target phrase</p>
             <div class="practice-target" data-practice-target></div>
@@ -99,20 +114,27 @@
             </p>
             <p class="practice-score" data-practice-score>Spoken match: --</p>
 
-            <p class="practice-subtitle">What the browser heard</p>
+            <p class="practice-subtitle">What the recognizer heard</p>
             <p class="practice-transcript" data-practice-transcript data-empty="true">
               No attempt yet.
             </p>
 
+            <p class="practice-subtitle">Weakest sounds</p>
+            <div class="practice-breakdown" data-practice-breakdown>
+              <p class="practice-breakdown-empty">Say the phrase to see the weakest sounds.</p>
+            </div>
+
             <p class="practice-note">
-              Green means the browser heard that word clearly. Red means it likely did not.
+              Green means the word or sub-word sound was heard clearly. Red means it needs another try.
             </p>
           </section>
 
           <div class="integration-note">
             <strong>Integration note:</strong>
-            Hear Again replays only the reflection question. I Understood is the place to
-            call <code>markComplete(scenarioId)</code> from Person 2.
+            Run <code>node server.js</code>, open <code>http://127.0.0.1:3000/demo/</code>,
+            and keep the Azure key in <code>.env.local</code>. The lesson audio mode lets you skip
+            the other spoken parts when you only want practice. I Understood is still the place to call
+            <code>markComplete(scenarioId)</code> from Person 2.
           </div>
         </section>
       </section>

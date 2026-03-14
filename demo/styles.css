@@ -535,3 +535,107 @@ code {
     flex-direction: column;
   }
 }
+.practice-meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.practice-provider,
+.practice-metrics {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(129, 98, 65, 0.12);
+  background: rgba(255, 255, 255, 0.72);
+  font-size: 0.88rem;
+  color: var(--muted);
+}
+
+.practice-badge[data-state="azure-ready"] {
+  background: #e5f3fb;
+  border-color: #8dbcd8;
+  color: #135978;
+}
+
+.practice-badge[data-state="browser-ready"] {
+  background: #f7efe4;
+  border-color: var(--line);
+  color: var(--ink);
+}
+
+.practice-breakdown {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.practice-breakdown-item {
+  padding: 12px 14px;
+  border-radius: 16px;
+  border: 1px solid rgba(129, 98, 65, 0.12);
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.practice-breakdown-label {
+  margin-bottom: 8px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.practice-breakdown-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.practice-syllable {
+  --syllable-color: #f4ecdf;
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 10px;
+  border-radius: 999px;
+  background: var(--syllable-color);
+  border: 1px solid rgba(98, 74, 49, 0.12);
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+.practice-syllable[data-quality="weak"] {
+  color: #6e1a12;
+}
+
+.practice-syllable[data-quality="partial"] {
+  color: #6a4e14;
+}
+
+.practice-syllable[data-quality="good"],
+.practice-syllable[data-quality="strong"] {
+  color: #215d35;
+}
+
+.practice-breakdown-empty {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+@media (max-width: 560px) {
+  .practice-meta-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+.segment-item[data-skipped="true"] {
+  opacity: 0.5;
+  background: #f6f1e9;
+  border-style: dashed;
+}
+
+.segment-item[data-skipped="true"] .segment-label::after {
+  content: " (skipped)";
+  color: var(--muted);
+  font-weight: 400;
+}

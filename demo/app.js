@@ -1,6 +1,11 @@
 (function () {
   const storageKey = "carevoice-demo-completed";
   const segmentOrder = ["dialogue", "narration", "key_phrase", "reflection"];
+  const lessonModeSegments = {
+    full: ["dialogue", "narration", "key_phrase", "reflection"],
+    practice: ["key_phrase", "reflection"],
+    key_phrase_only: ["key_phrase"]
+  };
 
   const titleElement = document.querySelector("[data-title]");
   const contextElement = document.querySelector("[data-context]");
@@ -14,11 +19,15 @@
   const completeButton = document.querySelector("[data-complete-button]");
   const resetProgressButton = document.querySelector("[data-reset-progress]");
   const voiceSelect = document.querySelector("[data-voice-select]");
+  const lessonModeSelect = document.querySelector("[data-lesson-mode]");
   const practiceBadgeElement = document.querySelector("[data-practice-badge]");
+  const practiceProviderElement = document.querySelector("[data-practice-provider]");
+  const practiceMetricsElement = document.querySelector("[data-practice-metrics]");
   const practiceTargetElement = document.querySelector("[data-practice-target]");
   const practiceStatusElement = document.querySelector("[data-practice-status]");
   const practiceScoreElement = document.querySelector("[data-practice-score]");
   const practiceTranscriptElement = document.querySelector("[data-practice-transcript]");
+  const practiceBreakdownElement = document.querySelector("[data-practice-breakdown]");
   const practiceStartButton = document.querySelector("[data-practice-start-button]");
   const practiceStopButton = document.querySelector("[data-practice-stop-button]");
 
@@ -35,11 +44,19 @@
   let readyToComplete = false;
   let isPlaying = false;
   let currentPlaybackMode = "idle";
+  let replaySegmentIds = ["reflection"];
+  let lessonPlaybackMode = lessonModeSelect ? lessonModeSelect.value : "full";
   let isListening = false;
   let practiceStopRequested = false;
   let practiceInterimTranscript = "";
   let practiceStatusMessage = "";
   let practiceStatusIsError = false;
+  let practiceRuntimeInfo = {
+    available: globalThis.CareVoicePractice.supportsSpeechRecognition(),
+    preferredProvider: globalThis.CareVoicePractice.supportsSpeechRecognition() ? "browser" : "none",
+    label: globalThis.CareVoicePractice.supportsSpeechRecognition() ? "Browser Fallback" : "Checking",
+    supportText: "Checking the speaking check provider."
+  };
   const practiceResultsByScenarioId = {};
 
   ensureSelectedScenarioIsUnlocked();
@@ -48,6 +65,7 @@
   renderSegmentList();
   renderPractice();
   hydrateVoices();
+  hydratePracticeRuntime();
   syncControls("idle");
 
   if (!globalThis.CareVoicePipeline.supportsSpeechSynthesis()) {
@@ -63,7 +81,7 @@
       return;
     }
 
-    startFullPlayback();
+    startSelectedPlayback();
   });
 
   actionButton.addEventListener("click", function () {
@@ -73,7 +91,7 @@
     }
 
     if (readyToComplete) {
-      startReflectionReplay();
+      startReplayPlayback();
     }
   });
 
@@ -143,6 +161,21 @@
     setStatus("Voice updated.", false);
   });
 
+  if (lessonModeSelect) {
+    lessonModeSelect.addEventListener("change", function () {
+      lessonPlaybackMode = lessonModeSelect.value || "full";
+      readyToComplete = false;
+      currentPlaybackMode = "idle";
+      activePhase = "";
+      completedPhases = [];
+      replaySegmentIds = getReplaySegmentIds();
+      renderSegmentList();
+      renderPractice();
+      syncControls("idle");
+      setStatus("Lesson audio mode updated.", false);
+    });
+  }
+
   practiceStartButton.addEventListener("click", function () {
     startPracticeListening();
   });
@@ -151,8 +184,46 @@
     stopPracticeListening(false);
   });
 
-  function startFullPlayback() {
+  function hydratePracticeRuntime() {
+    practice.getRuntimeInfo().then(function (info) {
+      practiceRuntimeInfo = info;
+      renderPractice();
+      syncControls(getControlMode());
+    }).catch(function () {
+      practiceRuntimeInfo = {
+        available: globalThis.CareVoicePractice.supportsSpeechRecognition(),
+        preferredProvider: globalThis.CareVoicePractice.supportsSpeechRecognition() ? "browser" : "none",
+        label: globalThis.CareVoicePractice.supportsSpeechRecognition() ? "Browser Fallback" : "Unavailable",
+        supportText: globalThis.CareVoicePractice.supportsSpeechRecognition()
+          ? "The local server did not answer, so the app will use the browser fallback."
+          : "Speech intake is not available in this browser."
+      };
+      renderPractice();
+      syncControls(getControlMode());
+    });
+  }
+
+  function getLessonSegmentIds() {
+    return lessonModeSegments[lessonPlaybackMode] || lessonModeSegments.full;
+  }
+
+  function getReplaySegmentIds() {
+    const selectedSegmentIds = getLessonSegmentIds();
+
+    if (selectedSegmentIds.indexOf("reflection") !== -1) {
+      return ["reflection"];
+    }
+
+    return [selectedSegmentIds[selectedSegmentIds.length - 1]];
+  }
+
+  function getReplayButtonLabel() {
+    return replaySegmentIds[0] === "key_phrase" ? "Hear Key Phrase Again" : "Hear Again";
+  }
+
+  function startSelectedPlayback() {
     const scenario = getSelectedScenario();
+    const selectedSegmentIds = getLessonSegmentIds();
 
     stopPracticeListening(true);
     readyToComplete = false;
@@ -160,33 +231,42 @@
     currentPlaybackMode = "full";
     activePhase = "";
     completedPhases = [];
+    replaySegmentIds = getReplaySegmentIds();
     renderSegmentList();
     renderScenarioCards();
     renderPractice();
     syncControls("playing");
     setStatus("Playing " + scenario.title + ".", false);
-    phaseChipElement.textContent = "Starting lesson";
+    phaseChipElement.textContent = selectedSegmentIds.length === segmentOrder.length
+      ? "Starting lesson"
+      : "Playing selected lesson parts";
 
-    pipeline.playScenario(scenario, buildPlaybackCallbacks("full")).catch(handlePlaybackError);
+    pipeline.playScenario(scenario, buildPlaybackCallbacks("full"), {
+      segmentIds: selectedSegmentIds
+    }).catch(handlePlaybackError);
   }
 
-  function startReflectionReplay() {
+  function startReplayPlayback() {
     const scenario = getSelectedScenario();
 
     stopPracticeListening(true);
     readyToComplete = false;
     isPlaying = true;
-    currentPlaybackMode = "reflection";
+    currentPlaybackMode = "replay";
     activePhase = "";
-    completedPhases = ["dialogue", "narration", "key_phrase"];
+    completedPhases = segmentOrder.filter(function (segmentId) {
+      return replaySegmentIds.indexOf(segmentId) === -1;
+    });
     renderSegmentList();
     renderScenarioCards();
     renderPractice();
     syncControls("playing");
-    setStatus("Replaying the reflection question.", false);
-    phaseChipElement.textContent = "Replaying reflection";
+    setStatus("Replaying the selected practice part.", false);
+    phaseChipElement.textContent = replaySegmentIds[0] === "key_phrase"
+      ? "Replaying key phrase"
+      : "Replaying reflection";
 
-    pipeline.playReflectionQuestion(scenario, buildPlaybackCallbacks("reflection")).catch(handlePlaybackError);
+    pipeline.playSegmentIds(scenario, replaySegmentIds, buildPlaybackCallbacks("replay")).catch(handlePlaybackError);
   }
 
   function stopPlayback() {
@@ -197,15 +277,15 @@
     currentPlaybackMode = "idle";
     activePhase = "";
 
-    if (stoppedMode === "reflection") {
+    if (stoppedMode === "replay") {
       readyToComplete = true;
       completedPhases = segmentOrder.slice();
       renderSegmentList();
       renderScenarioCards();
       renderPractice();
       syncControls("ready");
-      phaseChipElement.textContent = "Reflection replay stopped";
-      setStatus("Reflection replay stopped. Tap Hear Again or I Understood.", false);
+      phaseChipElement.textContent = "Replay stopped";
+      setStatus("Replay stopped. You can replay again or tap I Understood.", false);
       return;
     }
 
@@ -224,8 +304,12 @@
       onSegmentStart: function (event) {
         activePhase = event.phase;
 
-        if (mode === "reflection") {
-          completedPhases = ["dialogue", "narration", "key_phrase"];
+        if (mode === "replay") {
+          completedPhases = segmentOrder.filter(function (segmentId) {
+            return replaySegmentIds.indexOf(segmentId) === -1;
+          }).concat(segmentOrder.slice(0, replaySegmentIds.indexOf(event.phase)).filter(function (segmentId) {
+            return replaySegmentIds.indexOf(segmentId) !== -1;
+          }));
         } else {
           completedPhases = segmentOrder.slice(0, segmentOrder.indexOf(event.phase));
         }
@@ -238,11 +322,11 @@
         }
 
         if (event.status === "complete") {
-          phaseChipElement.textContent = mode === "full" ? "Lesson finished" : "Reflection replay finished";
+          phaseChipElement.textContent = mode === "full" ? "Lesson finished" : "Replay finished";
           setStatus(
             mode === "full"
-              ? "Lesson finished. Tap I Understood or Hear Again."
-              : "Reflection replayed. Tap I Understood or Hear Again.",
+              ? "Lesson finished. Tap I Understood or replay the practice part."
+              : "Replay finished. Tap I Understood or replay again.",
             false
           );
         }
@@ -268,15 +352,15 @@
     currentPlaybackMode = "idle";
     activePhase = "";
 
-    if (failedMode === "reflection") {
+    if (failedMode === "replay") {
       readyToComplete = true;
       completedPhases = segmentOrder.slice();
       renderSegmentList();
       renderScenarioCards();
       renderPractice();
       syncControls("ready");
-      phaseChipElement.textContent = "Reflection replay failed";
-      setStatus("Reflection replay failed. Tap Hear Again or I Understood.", true);
+      phaseChipElement.textContent = "Replay failed";
+      setStatus("Replay failed. You can try replaying again or continue.", true);
       return;
     }
 
@@ -293,8 +377,8 @@
   function startPracticeListening() {
     const scenario = getSelectedScenario();
 
-    if (!globalThis.CareVoicePractice.supportsSpeechRecognition()) {
-      practiceStatusMessage = "Speech intake is not available in this browser.";
+    if (!practiceRuntimeInfo.available) {
+      practiceStatusMessage = practiceRuntimeInfo.supportText;
       practiceStatusIsError = true;
       renderPractice();
       return;
@@ -307,7 +391,9 @@
     isListening = true;
     practiceStopRequested = false;
     practiceInterimTranscript = "";
-    practiceStatusMessage = "Listening now. Say the key phrase out loud.";
+    practiceStatusMessage = practiceRuntimeInfo.preferredProvider === "azure"
+      ? "Listening now. Azure will grade each word and highlight syllables when available."
+      : "Listening now. Say the key phrase out loud.";
     practiceStatusIsError = false;
     renderScenarioCards();
     renderPractice();
@@ -315,8 +401,30 @@
 
     practice.listenForPhrase(scenario.keyPhrase, {
       onStateChange: function (event) {
+        if (event.status === "fallback") {
+          practiceStatusMessage = event.message;
+          practiceStatusIsError = false;
+          practiceRuntimeInfo = Object.assign({}, practiceRuntimeInfo, {
+            preferredProvider: "browser",
+            label: "Browser Fallback"
+          });
+          renderPractice();
+          return;
+        }
+
         if (event.status === "processing") {
-          practiceStatusMessage = "Checking how closely your speech matched the phrase.";
+          practiceStatusMessage = event.provider === "azure"
+            ? "Azure is scoring your speech now."
+            : "Checking how closely your speech matched the phrase.";
+          practiceStatusIsError = false;
+          renderPractice();
+          return;
+        }
+
+        if (event.status === "listening") {
+          practiceStatusMessage = event.provider === "azure"
+            ? "Listening now. Azure will grade each word and highlight syllables when available."
+            : "Listening now. Say the key phrase out loud.";
           practiceStatusIsError = false;
           renderPractice();
         }
@@ -391,8 +499,12 @@
   function syncControls(mode) {
     playButton.disabled = mode === "playing" || isListening || !isSelectedScenarioUnlocked();
     actionButton.disabled = mode === "idle" || isListening;
-    actionButton.textContent = mode === "ready" ? "Hear Again" : "Stop";
+    actionButton.textContent = mode === "ready" ? getReplayButtonLabel() : "Stop";
     completeButton.disabled = mode !== "ready" || isListening;
+
+    if (lessonModeSelect) {
+      lessonModeSelect.disabled = mode === "playing" || isListening;
+    }
   }
 
   function loadCompletedScenarioIds() {
@@ -519,6 +631,7 @@
           practiceStatusMessage = "";
           practiceStatusIsError = false;
           practiceInterimTranscript = "";
+          replaySegmentIds = getReplaySegmentIds();
           renderScenarioCards();
           renderSelectedScenario();
           renderSegmentList();
@@ -550,6 +663,7 @@
   function renderSegmentList() {
     const scenario = getSelectedScenario();
     const segments = globalThis.CareVoicePipeline.buildSegments(scenario);
+    const activeSegmentIds = getLessonSegmentIds();
 
     segmentListElement.innerHTML = "";
 
@@ -558,6 +672,7 @@
       item.className = "segment-item";
       item.dataset.active = String(segment.id === activePhase);
       item.dataset.done = String(completedPhases.indexOf(segment.id) !== -1);
+      item.dataset.skipped = String(activeSegmentIds.indexOf(segment.id) === -1);
       item.innerHTML = [
         "<span class=\"segment-label\">" + segment.label + "</span>",
         "<span class=\"segment-text\">" + segment.text + "</span>"
@@ -593,11 +708,22 @@
         wordElement.style.setProperty("--word-color", wordResult.color);
         wordElement.title = wordResult.matchedWord
           ? "Heard as: " + wordResult.matchedWord
-          : "The browser did not hear this word clearly.";
+          : "This word was missed or not heard clearly.";
       }
 
       practiceTargetElement.appendChild(wordElement);
     });
+
+    practiceProviderElement.textContent = practiceResult ? practiceResult.providerLabel : practiceRuntimeInfo.label;
+    practiceMetricsElement.textContent = practiceResult
+      ? practiceResult.metricsText
+      : practiceRuntimeInfo.preferredProvider === "azure"
+        ? "Word and syllable scoring ready"
+        : practiceRuntimeInfo.preferredProvider === "browser"
+          ? "Transcript match only"
+          : "No speech intake available";
+
+    renderPracticeBreakdown(practiceResult);
 
     practiceBadgeElement.textContent = buildPracticeBadgeText(practiceResult);
     practiceBadgeElement.dataset.state = buildPracticeBadgeState(practiceResult);
@@ -623,16 +749,61 @@
     practiceStopButton.disabled = !isListening;
   }
 
+  function renderPracticeBreakdown(practiceResult) {
+    practiceBreakdownElement.innerHTML = "";
+
+    if (!practiceResult) {
+      practiceBreakdownElement.innerHTML = "<p class=\"practice-breakdown-empty\">Say the phrase to see the weakest sounds.</p>";
+      return;
+    }
+
+    const wordsWithBreakdown = practiceResult.wordResults.filter(function (wordResult) {
+      return (Array.isArray(wordResult.syllables) && wordResult.syllables.length > 0) ||
+        (Array.isArray(wordResult.phonemes) && wordResult.phonemes.length > 0);
+    });
+
+    if (wordsWithBreakdown.length === 0) {
+      practiceBreakdownElement.innerHTML = "<p class=\"practice-breakdown-empty\">Sub-word highlighting appears when Azure pronunciation is active.</p>";
+      return;
+    }
+
+    wordsWithBreakdown.forEach(function (wordResult) {
+      const breakdownParts = wordResult.syllables.length > 0 ? wordResult.syllables : wordResult.phonemes;
+      const item = document.createElement("div");
+      const label = document.createElement("p");
+      const row = document.createElement("div");
+
+      item.className = "practice-breakdown-item";
+      label.className = "practice-breakdown-label";
+      label.textContent = wordResult.targetWord + (wordResult.syllables.length > 0 ? " · syllables" : " · sounds");
+      row.className = "practice-breakdown-row";
+
+      breakdownParts.forEach(function (part) {
+        const chip = document.createElement("span");
+        chip.className = "practice-syllable";
+        chip.dataset.quality = part.quality;
+        chip.textContent = part.label;
+        chip.style.setProperty("--syllable-color", part.color);
+        chip.title = "Score: " + Math.round(part.score * 100) + "%";
+        row.appendChild(chip);
+      });
+
+      item.appendChild(label);
+      item.appendChild(row);
+      practiceBreakdownElement.appendChild(item);
+    });
+  }
+
   function canStartPractice() {
-    return globalThis.CareVoicePractice.supportsSpeechRecognition() &&
+    return practiceRuntimeInfo.available &&
       isSelectedScenarioUnlocked() &&
       !isPlaying &&
       !isListening;
   }
 
   function buildPracticeStatusText(practiceResult) {
-    if (!globalThis.CareVoicePractice.supportsSpeechRecognition()) {
-      return "Speech intake is not available in this browser. Use Chrome or Edge to try it.";
+    if (!practiceRuntimeInfo.available) {
+      return practiceRuntimeInfo.supportText;
     }
 
     if (practiceStatusMessage) {
@@ -651,11 +822,13 @@
       return "Unlock this lesson to try the speaking check.";
     }
 
-    return "Say the key phrase and we will compare what the browser heard with the target sentence.";
+    return practiceRuntimeInfo.preferredProvider === "azure"
+      ? "Say the key phrase and Azure will grade each word. Syllable chips appear when Azure returns them."
+      : "Say the key phrase and we will compare what the browser heard with the target sentence.";
   }
 
   function buildPracticeBadgeText(practiceResult) {
-    if (!globalThis.CareVoicePractice.supportsSpeechRecognition()) {
+    if (!practiceRuntimeInfo.available) {
       return "Unavailable";
     }
 
@@ -667,11 +840,11 @@
       return practiceResult.ratingLabel;
     }
 
-    return "Ready";
+    return practiceRuntimeInfo.preferredProvider === "azure" ? "Azure Ready" : "Browser Ready";
   }
 
   function buildPracticeBadgeState(practiceResult) {
-    if (!globalThis.CareVoicePractice.supportsSpeechRecognition()) {
+    if (!practiceRuntimeInfo.available) {
       return "unavailable";
     }
 
@@ -683,7 +856,7 @@
       return practiceResult.ratingKey;
     }
 
-    return "ready";
+    return practiceRuntimeInfo.preferredProvider === "azure" ? "azure-ready" : "browser-ready";
   }
 
   function qualityFromScore(score) {
