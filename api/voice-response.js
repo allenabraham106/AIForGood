@@ -1,13 +1,9 @@
 import { GoogleGenAI } from "@google/genai";
 
-const SYSTEM = `You are a warm English coach for newcomer learners. They just spoke a phrase out loud for practice.
-Give one short, encouraging response (1–2 sentences). Rules:
-- Maximum 15 words total.
-- Beginner English only.
-- Encouraging and kind. If they tried, praise the attempt.
-- If what they said is close to the target phrase, say they did well.
-- No jargon. Natural when spoken aloud.
-Return only the response text. No quotes or labels.`;
+const SYSTEM = `You are a coach judging whether a learner said the correct phrase. They were practicing a specific phrase.
+Respond with ONLY a JSON object, no other text. Two keys:
+- "correct": true only if what they said matches or is very close to the target phrase (same meaning, minor wording or pronunciation differences OK). false if wrong phrase, gibberish, or unrelated.
+- "message": a short phrase (max 12 words). If correct: encouraging (e.g. "Well done!"). If incorrect: say "Incorrect. Try again." or similar. Beginner English only.`;
 
 export default async function handler(req, res) {
   try {
@@ -49,8 +45,8 @@ export default async function handler(req, res) {
   try {
     const response = await ai.models.generateContent({
       model: "gemini-3-flash-preview",
-      contents: `${SYSTEM}\n\nWhat the learner said: "${userSaid}".${target}\n\nYour short response:`,
-      config: { maxOutputTokens: 80 },
+      contents: `${SYSTEM}\n\nWhat the learner said: "${userSaid}".${target}\n\nRespond with only the JSON object:`,
+      config: { maxOutputTokens: 120 },
     });
 
     // Support both SDK response shapes
@@ -63,18 +59,23 @@ export default async function handler(req, res) {
       const part = response.candidates[0].content.parts[0];
       text = typeof part.text === "string" ? part.text : "";
     }
-    const answer = typeof text === "string" ? text.trim().replace(/^["']|["']$/g, "") : "";
-
-    if (!answer) {
-      res.status(502).json({
-        error: "No response from model",
-        detail: "Gemini returned empty or unexpected shape",
-      });
-      return;
+    const raw = typeof text === "string" ? text.trim() : "";
+    // Parse JSON (may be wrapped in markdown code block)
+    let correct = false;
+    let message = "Incorrect. Try again.";
+    const jsonMatch = raw.match(/\{[\s\S]*\}/);
+    if (jsonMatch) {
+      try {
+        const parsed = JSON.parse(jsonMatch[0]);
+        correct = parsed.correct === true;
+        if (typeof parsed.message === "string" && parsed.message.trim()) {
+          message = parsed.message.trim();
+        }
+      } catch (_) {}
     }
 
     res.setHeader("Cache-Control", "s-maxage=0, no-store");
-    res.status(200).json({ answer });
+    res.status(200).json({ answer: message, correct });
   } catch (err) {
     const msg = err?.message || String(err);
     console.error("Gemini voice-response error:", msg);
