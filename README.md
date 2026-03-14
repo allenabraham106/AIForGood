@@ -6,6 +6,8 @@ This repo now contains a no-API audio pipeline you can use right away:
 
 - Finalized local scenario data for 4 PSW-focused lessons
 - Browser speech synthesis for dialogue, cultural narration, key phrase repetition, and reflection question playback
+- Browser speech intake for optional speaking practice on the key phrase
+- Non-hardcoded word-by-word coloring from red to green based on what the browser heard
 - A simple completion handoff point for the tree and progress logic
 - A tiny browser demo so the team can test the sequencing before the full UI lands
 
@@ -16,12 +18,22 @@ This repo now contains a no-API audio pipeline you can use right away:
 - No login
 - No database
 
+## Honest limitation
+
+The new speaking check is real, but it is not true phoneme-level pronunciation scoring.
+It uses browser speech recognition to hear what the learner said, then compares the heard transcript to the target key phrase and colors each target word from red to green based on match quality.
+That means it works as a practical spoken-match check, but it should not be pitched as a clinical pronunciation assessment.
+
+Speech recognition support is browser-dependent and usually works best in Chrome or Edge with microphone permission enabled.
+In many browsers it also depends on a network-backed recognition service even though speech synthesis can run locally.
+
 ## Files
 
 - `src/pipeline/scenarios.js`: scenario content plus future prompt context helper
 - `src/pipeline/speechPipeline.js`: browser speech sequencer with reflection replay support
+- `src/pipeline/speechPractice.js`: browser speech intake plus scoring and word coloring logic
 - `demo/index.html`: quick demo page
-- `demo/app.js`: demo wiring, sequential unlocks, and completion callback placeholder
+- `demo/app.js`: demo wiring, sequential unlocks, speaking check, and completion callback placeholder
 - `demo/styles.css`: lightweight styling for the demo page
 
 ## Quick test
@@ -31,9 +43,11 @@ This repo now contains a no-API audio pipeline you can use right away:
 3. Click `Play lesson`.
 4. Listen for: dialogue -> narration -> key phrase -> reflection question.
 5. Click `Hear Again` to replay only the reflection question.
-6. Click `I Understood` to simulate the completion handoff and unlock the next lesson.
+6. Click `Start speaking` and say the key phrase.
+7. Look at the red-to-green word colors and transcript.
+8. Click `I Understood` to simulate the completion handoff and unlock the next lesson.
 
-The audio must be started by a button click because browsers block autoplay.
+The audio and speech intake must be started by a user click because browsers block autoplay and microphone access without interaction.
 
 ## Team handoff
 

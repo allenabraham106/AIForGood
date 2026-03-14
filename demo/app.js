@@ -14,9 +14,19 @@
   const completeButton = document.querySelector("[data-complete-button]");
   const resetProgressButton = document.querySelector("[data-reset-progress]");
   const voiceSelect = document.querySelector("[data-voice-select]");
+  const practiceBadgeElement = document.querySelector("[data-practice-badge]");
+  const practiceTargetElement = document.querySelector("[data-practice-target]");
+  const practiceStatusElement = document.querySelector("[data-practice-status]");
+  const practiceScoreElement = document.querySelector("[data-practice-score]");
+  const practiceTranscriptElement = document.querySelector("[data-practice-transcript]");
+  const practiceStartButton = document.querySelector("[data-practice-start-button]");
+  const practiceStopButton = document.querySelector("[data-practice-stop-button]");
 
   const scenarios = globalThis.CareVoiceScenarios.scenarios;
   const pipeline = globalThis.CareVoicePipeline.createSpeechPipeline();
+  const practice = globalThis.CareVoicePractice.createSpeechPractice({
+    lang: "en-CA"
+  });
 
   let selectedScenarioId = scenarios[0].id;
   let completedScenarioIds = normalizeCompletedScenarioIds(loadCompletedScenarioIds());
@@ -25,11 +35,18 @@
   let readyToComplete = false;
   let isPlaying = false;
   let currentPlaybackMode = "idle";
+  let isListening = false;
+  let practiceStopRequested = false;
+  let practiceInterimTranscript = "";
+  let practiceStatusMessage = "";
+  let practiceStatusIsError = false;
+  const practiceResultsByScenarioId = {};
 
   ensureSelectedScenarioIsUnlocked();
   renderScenarioCards();
   renderSelectedScenario();
   renderSegmentList();
+  renderPractice();
   hydrateVoices();
   syncControls("idle");
 
@@ -61,23 +78,26 @@
   });
 
   completeButton.addEventListener("click", function () {
-    if (!readyToComplete) {
+    if (!readyToComplete || isListening) {
       return;
     }
 
     const scenario = getSelectedScenario();
 
     markScenarioComplete(scenario.id);
-
     readyToComplete = false;
     isPlaying = false;
     currentPlaybackMode = "idle";
     activePhase = "";
     completedPhases = [];
+    practiceStatusMessage = "";
+    practiceStatusIsError = false;
+    practiceInterimTranscript = "";
     selectNextScenarioAfterCompletion();
     renderScenarioCards();
     renderSelectedScenario();
     renderSegmentList();
+    renderPractice();
     syncControls("idle");
 
     if (completedScenarioIds.length === scenarios.length) {
@@ -92,6 +112,7 @@
 
   resetProgressButton.addEventListener("click", function () {
     pipeline.stop();
+    stopPracticeListening(true);
     completedScenarioIds = [];
     persistCompletedScenarioIds();
     selectedScenarioId = scenarios[0].id;
@@ -100,9 +121,18 @@
     currentPlaybackMode = "idle";
     activePhase = "";
     completedPhases = [];
+    practiceStatusMessage = "";
+    practiceStatusIsError = false;
+    practiceInterimTranscript = "";
+
+    Object.keys(practiceResultsByScenarioId).forEach(function (scenarioId) {
+      delete practiceResultsByScenarioId[scenarioId];
+    });
+
     renderScenarioCards();
     renderSelectedScenario();
     renderSegmentList();
+    renderPractice();
     syncControls("idle");
     phaseChipElement.textContent = "Waiting to start";
     setStatus("Demo progress reset.", false);
@@ -113,9 +143,18 @@
     setStatus("Voice updated.", false);
   });
 
+  practiceStartButton.addEventListener("click", function () {
+    startPracticeListening();
+  });
+
+  practiceStopButton.addEventListener("click", function () {
+    stopPracticeListening(false);
+  });
+
   function startFullPlayback() {
     const scenario = getSelectedScenario();
 
+    stopPracticeListening(true);
     readyToComplete = false;
     isPlaying = true;
     currentPlaybackMode = "full";
@@ -123,6 +162,7 @@
     completedPhases = [];
     renderSegmentList();
     renderScenarioCards();
+    renderPractice();
     syncControls("playing");
     setStatus("Playing " + scenario.title + ".", false);
     phaseChipElement.textContent = "Starting lesson";
@@ -133,6 +173,7 @@
   function startReflectionReplay() {
     const scenario = getSelectedScenario();
 
+    stopPracticeListening(true);
     readyToComplete = false;
     isPlaying = true;
     currentPlaybackMode = "reflection";
@@ -140,6 +181,7 @@
     completedPhases = ["dialogue", "narration", "key_phrase"];
     renderSegmentList();
     renderScenarioCards();
+    renderPractice();
     syncControls("playing");
     setStatus("Replaying the reflection question.", false);
     phaseChipElement.textContent = "Replaying reflection";
@@ -160,6 +202,7 @@
       completedPhases = segmentOrder.slice();
       renderSegmentList();
       renderScenarioCards();
+      renderPractice();
       syncControls("ready");
       phaseChipElement.textContent = "Reflection replay stopped";
       setStatus("Reflection replay stopped. Tap Hear Again or I Understood.", false);
@@ -170,6 +213,7 @@
     completedPhases = [];
     renderSegmentList();
     renderScenarioCards();
+    renderPractice();
     syncControls("idle");
     phaseChipElement.textContent = "Stopped";
     setStatus("Playback stopped.", false);
@@ -211,6 +255,7 @@
         completedPhases = segmentOrder.slice();
         renderSegmentList();
         renderScenarioCards();
+        renderPractice();
         syncControls("ready");
       }
     };
@@ -228,6 +273,7 @@
       completedPhases = segmentOrder.slice();
       renderSegmentList();
       renderScenarioCards();
+      renderPractice();
       syncControls("ready");
       phaseChipElement.textContent = "Reflection replay failed";
       setStatus("Reflection replay failed. Tap Hear Again or I Understood.", true);
@@ -238,16 +284,115 @@
     completedPhases = [];
     renderSegmentList();
     renderScenarioCards();
+    renderPractice();
     syncControls("idle");
     phaseChipElement.textContent = "Playback failed";
     setStatus(error.message, true);
   }
 
+  function startPracticeListening() {
+    const scenario = getSelectedScenario();
+
+    if (!globalThis.CareVoicePractice.supportsSpeechRecognition()) {
+      practiceStatusMessage = "Speech intake is not available in this browser.";
+      practiceStatusIsError = true;
+      renderPractice();
+      return;
+    }
+
+    if (!isSelectedScenarioUnlocked() || isPlaying || isListening) {
+      return;
+    }
+
+    isListening = true;
+    practiceStopRequested = false;
+    practiceInterimTranscript = "";
+    practiceStatusMessage = "Listening now. Say the key phrase out loud.";
+    practiceStatusIsError = false;
+    renderScenarioCards();
+    renderPractice();
+    syncControls(getControlMode());
+
+    practice.listenForPhrase(scenario.keyPhrase, {
+      onStateChange: function (event) {
+        if (event.status === "processing") {
+          practiceStatusMessage = "Checking how closely your speech matched the phrase.";
+          practiceStatusIsError = false;
+          renderPractice();
+        }
+      },
+      onInterim: function (event) {
+        practiceInterimTranscript = event.transcript;
+        renderPractice();
+      }
+    }).then(function (analysis) {
+      isListening = false;
+      practiceStopRequested = false;
+      practiceInterimTranscript = "";
+      practiceResultsByScenarioId[scenario.id] = analysis;
+      practiceStatusMessage = analysis.message;
+      practiceStatusIsError = false;
+      renderScenarioCards();
+      renderPractice();
+      syncControls(getControlMode());
+    }).catch(function (error) {
+      isListening = false;
+      practiceInterimTranscript = "";
+
+      if (error && error.code === "stopped" && practiceStopRequested) {
+        practiceStopRequested = false;
+        renderScenarioCards();
+        renderPractice();
+        syncControls(getControlMode());
+        return;
+      }
+
+      practiceStopRequested = false;
+      practiceStatusMessage = error.message;
+      practiceStatusIsError = true;
+      renderScenarioCards();
+      renderPractice();
+      syncControls(getControlMode());
+    });
+  }
+
+  function stopPracticeListening(silent) {
+    if (!isListening) {
+      return;
+    }
+
+    practiceStopRequested = true;
+    isListening = false;
+    practiceInterimTranscript = "";
+    practice.stop();
+
+    if (!silent) {
+      practiceStatusMessage = "Listening stopped.";
+      practiceStatusIsError = false;
+    }
+
+    renderScenarioCards();
+    renderPractice();
+    syncControls(getControlMode());
+  }
+
+  function getControlMode() {
+    if (isPlaying) {
+      return "playing";
+    }
+
+    if (readyToComplete) {
+      return "ready";
+    }
+
+    return "idle";
+  }
+
   function syncControls(mode) {
-    playButton.disabled = mode === "playing" || !isSelectedScenarioUnlocked();
-    actionButton.disabled = mode === "idle";
+    playButton.disabled = mode === "playing" || isListening || !isSelectedScenarioUnlocked();
+    actionButton.disabled = mode === "idle" || isListening;
     actionButton.textContent = mode === "ready" ? "Hear Again" : "Stop";
-    completeButton.disabled = mode !== "ready";
+    completeButton.disabled = mode !== "ready" || isListening;
   }
 
   function loadCompletedScenarioIds() {
@@ -354,7 +499,7 @@
       button.className = "scenario-card";
       button.dataset.selected = String(scenario.id === selectedScenarioId);
       button.dataset.locked = String(!unlocked);
-      button.disabled = !unlocked || isPlaying;
+      button.disabled = !unlocked || isPlaying || isListening;
       button.innerHTML = [
         "<h3>" + scenario.title + "</h3>",
         "<p>" + scenario.context + "</p>",
@@ -364,16 +509,20 @@
         "</div>"
       ].join("");
 
-      if (unlocked && !isPlaying) {
+      if (unlocked && !isPlaying && !isListening) {
         button.addEventListener("click", function () {
           selectedScenarioId = scenario.id;
           readyToComplete = false;
           currentPlaybackMode = "idle";
           activePhase = "";
           completedPhases = [];
+          practiceStatusMessage = "";
+          practiceStatusIsError = false;
+          practiceInterimTranscript = "";
           renderScenarioCards();
           renderSelectedScenario();
           renderSegmentList();
+          renderPractice();
           syncControls("idle");
           phaseChipElement.textContent = "Waiting to start";
           setStatus("Selected " + scenario.title + ".", false);
@@ -415,6 +564,142 @@
       ].join("");
       segmentListElement.appendChild(item);
     });
+  }
+
+  function renderPractice() {
+    const scenario = getSelectedScenario();
+    const practiceResult = practiceResultsByScenarioId[scenario.id] || null;
+    const targetWords = practiceResult
+      ? practiceResult.wordResults
+      : globalThis.CareVoicePractice.tokenizeDetailed(scenario.keyPhrase).map(function (token) {
+          return {
+            targetWord: token.display,
+            score: null,
+            color: ""
+          };
+        });
+
+    practiceTargetElement.innerHTML = "";
+
+    targetWords.forEach(function (wordResult) {
+      const wordElement = document.createElement("span");
+      const quality = typeof wordResult.score === "number" ? qualityFromScore(wordResult.score) : "neutral";
+
+      wordElement.className = "practice-word";
+      wordElement.dataset.quality = quality;
+      wordElement.textContent = wordResult.targetWord;
+
+      if (typeof wordResult.score === "number") {
+        wordElement.style.setProperty("--word-color", wordResult.color);
+        wordElement.title = wordResult.matchedWord
+          ? "Heard as: " + wordResult.matchedWord
+          : "The browser did not hear this word clearly.";
+      }
+
+      practiceTargetElement.appendChild(wordElement);
+    });
+
+    practiceBadgeElement.textContent = buildPracticeBadgeText(practiceResult);
+    practiceBadgeElement.dataset.state = buildPracticeBadgeState(practiceResult);
+    practiceStatusElement.dataset.error = String(practiceStatusIsError);
+    practiceStatusElement.textContent = buildPracticeStatusText(practiceResult);
+    practiceScoreElement.textContent = practiceResult
+      ? "Spoken match: " + Math.round(practiceResult.overallScore * 100) + "%"
+      : "Spoken match: --";
+    practiceScoreElement.dataset.state = practiceResult ? practiceResult.ratingKey : "idle";
+
+    if (isListening) {
+      practiceTranscriptElement.textContent = practiceInterimTranscript || "Listening...";
+      practiceTranscriptElement.dataset.empty = "false";
+    } else if (practiceResult) {
+      practiceTranscriptElement.textContent = practiceResult.transcript;
+      practiceTranscriptElement.dataset.empty = "false";
+    } else {
+      practiceTranscriptElement.textContent = "No attempt yet.";
+      practiceTranscriptElement.dataset.empty = "true";
+    }
+
+    practiceStartButton.disabled = !canStartPractice();
+    practiceStopButton.disabled = !isListening;
+  }
+
+  function canStartPractice() {
+    return globalThis.CareVoicePractice.supportsSpeechRecognition() &&
+      isSelectedScenarioUnlocked() &&
+      !isPlaying &&
+      !isListening;
+  }
+
+  function buildPracticeStatusText(practiceResult) {
+    if (!globalThis.CareVoicePractice.supportsSpeechRecognition()) {
+      return "Speech intake is not available in this browser. Use Chrome or Edge to try it.";
+    }
+
+    if (practiceStatusMessage) {
+      return practiceStatusMessage;
+    }
+
+    if (practiceResult) {
+      return practiceResult.message;
+    }
+
+    if (isPlaying) {
+      return "Finish the lesson audio before you start the speaking check.";
+    }
+
+    if (!isSelectedScenarioUnlocked()) {
+      return "Unlock this lesson to try the speaking check.";
+    }
+
+    return "Say the key phrase and we will compare what the browser heard with the target sentence.";
+  }
+
+  function buildPracticeBadgeText(practiceResult) {
+    if (!globalThis.CareVoicePractice.supportsSpeechRecognition()) {
+      return "Unavailable";
+    }
+
+    if (isListening) {
+      return "Listening";
+    }
+
+    if (practiceResult) {
+      return practiceResult.ratingLabel;
+    }
+
+    return "Ready";
+  }
+
+  function buildPracticeBadgeState(practiceResult) {
+    if (!globalThis.CareVoicePractice.supportsSpeechRecognition()) {
+      return "unavailable";
+    }
+
+    if (isListening) {
+      return "listening";
+    }
+
+    if (practiceResult) {
+      return practiceResult.ratingKey;
+    }
+
+    return "ready";
+  }
+
+  function qualityFromScore(score) {
+    if (score >= 0.85) {
+      return "strong";
+    }
+
+    if (score >= 0.65) {
+      return "good";
+    }
+
+    if (score >= 0.4) {
+      return "partial";
+    }
+
+    return "weak";
   }
 
   function labelForPhase(phase) {

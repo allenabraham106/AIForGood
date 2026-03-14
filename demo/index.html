@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="./styles.css" />
     <script src="../src/pipeline/scenarios.js" defer></script>
     <script src="../src/pipeline/speechPipeline.js" defer></script>
+    <script src="../src/pipeline/speechPractice.js" defer></script>
     <script src="./app.js" defer></script>
   </head>
   <body>
@@ -16,8 +17,8 @@
         <h1>Role 3 Audio Pipeline Demo</h1>
         <p class="lede">
           Tap a lesson and the browser will speak the dialogue, cultural tip, key phrase,
-          and reflection question in sequence. After the lesson ends, use Hear Again or
-          I Understood to continue the flow.
+          and reflection question in sequence. After the lesson ends, use Hear Again,
+          try the speaking check, or tap I Understood to continue the flow.
         </p>
         <div class="status-row">
           <span class="status-pill" data-status-pill>Idle</span>
@@ -66,6 +67,47 @@
             <h3>Pipeline steps</h3>
             <ol class="segment-list" data-segment-list></ol>
           </div>
+
+          <section class="practice-card">
+            <div class="practice-heading">
+              <div>
+                <p class="detail-label practice-label">Speaking Check</p>
+                <h3>Say the key phrase</h3>
+              </div>
+              <span class="practice-badge" data-practice-badge>Ready</span>
+            </div>
+
+            <p class="practice-copy">
+              This compares what the browser hears with the target phrase and colors each
+              word from red to green.
+            </p>
+
+            <p class="practice-subtitle">Target phrase</p>
+            <div class="practice-target" data-practice-target></div>
+
+            <div class="controls practice-controls">
+              <button class="primary-button" type="button" data-practice-start-button>
+                Start speaking
+              </button>
+              <button class="secondary-button" type="button" data-practice-stop-button disabled>
+                Stop listening
+              </button>
+            </div>
+
+            <p class="practice-status" data-practice-status>
+              Say the key phrase and we will compare it to the target sentence.
+            </p>
+            <p class="practice-score" data-practice-score>Spoken match: --</p>
+
+            <p class="practice-subtitle">What the browser heard</p>
+            <p class="practice-transcript" data-practice-transcript data-empty="true">
+              No attempt yet.
+            </p>
+
+            <p class="practice-note">
+              Green means the browser heard that word clearly. Red means it likely did not.
+            </p>
+          </section>
 
           <div class="integration-note">
             <strong>Integration note:</strong>
