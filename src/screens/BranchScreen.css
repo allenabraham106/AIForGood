@@ -4,7 +4,245 @@
   padding: 0 16px 0;
   display: flex;
   flex-direction: column;
+  position: relative;
+  overflow: hidden;
+  transition: background 1.2s ease;
+}
+
+/* Level 1 — dark winter */
+.branch-screen--level-1 {
   background: radial-gradient(ellipse at 50% 40%, #0d2a12 0%, #060e07 70%);
+}
+
+/* Level 2 — dark night with stars */
+.branch-screen--level-2 {
+  background: linear-gradient(180deg, #0a0e1a 0%, #0d1520 30%, #0f1a15 70%, #0a120d 100%);
+}
+
+/* Level 3 — dawn: stars fading + sunrise glow */
+.branch-screen--level-3 {
+  background: linear-gradient(
+    180deg,
+    #1a2435 0%,
+    #2a3548 20%,
+    #3d4a3a 50%,
+    #5a6b45 80%,
+    #6b7c52 100%
+  );
+}
+
+/* Level 4 — sunny */
+.branch-screen--level-4 {
+  background: linear-gradient(180deg, #87ceeb 0%, #98d4e8 25%, #7ab87a 60%, #4a7c4a 100%);
+}
+
+/* Happy sun — level 4, top-right */
+.happy-sun {
+  position: absolute;
+  top: 12px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.happy-sun--right {
+  right: 12px;
+  left: auto;
+}
+
+.happy-sun--left {
+  left: 12px;
+  right: auto;
+}
+
+.happy-sun-svg {
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0 0 12px rgba(255, 193, 7, 0.5));
+}
+
+.happy-sun-svg .sun-rays line {
+  animation: ray-pulse 2s ease-in-out infinite;
+}
+
+.happy-sun-svg .sun-rays line:nth-child(odd) {
+  animation-delay: 0.3s;
+}
+
+@keyframes ray-pulse {
+  0%, 100% { opacity: 0.9; }
+  50% { opacity: 1; }
+}
+
+/* Clouds — level 4 only */
+.clouds {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.cloud {
+  position: absolute;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  animation: cloud-drift 25s linear infinite;
+}
+
+.cloud-puff {
+  display: block;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+}
+
+.cloud-puff:nth-child(1) {
+  width: 20px;
+  height: 20px;
+  margin-left: 0;
+}
+.cloud-puff:nth-child(2) {
+  width: 32px;
+  height: 28px;
+}
+.cloud-puff:nth-child(3) {
+  width: 22px;
+  height: 22px;
+}
+
+@keyframes cloud-drift {
+  from { transform: translateX(-20%) scale(var(--cloud-scale, 1)); }
+  to { transform: translateX(120vw) scale(var(--cloud-scale, 1)); }
+}
+
+/* Stars — level 2 (night) & level 3 (dawn, fading) */
+.stars {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.star {
+  position: absolute;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 0 4px rgba(255, 255, 255, 0.8);
+  animation: star-twinkle 3s ease-in-out infinite;
+}
+
+.stars--dawn .star {
+  animation: star-fade 4s ease-in-out infinite;
+}
+
+@keyframes star-twinkle {
+  0%, 100% { opacity: 0.7; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.2); }
+}
+
+@keyframes star-fade {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.6; }
+}
+
+/* Level 3 — dawn horizon glow (first light) */
+.branch-dawn-glow {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 45%;
+  background: linear-gradient(
+    to top,
+    rgba(255, 180, 100, 0.15) 0%,
+    rgba(255, 140, 80, 0.08) 30%,
+    transparent 70%
+  );
+  pointer-events: none;
+  z-index: 0;
+}
+
+.snowflakes {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.snowflake {
+  position: absolute;
+  top: -24px;
+  display: inline-block;
+  color: rgba(255, 255, 255, 0.95);
+  line-height: 1;
+  animation: snowfall linear infinite;
+  text-shadow: 0 0 3px rgba(255, 255, 255, 0.4);
+}
+
+@keyframes snowfall {
+  to {
+    transform: translateY(100vh) rotate(360deg);
+  }
+}
+
+.branch-demo {
+  position: fixed;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(12px);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.branch-demo-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #fff;
+}
+
+.branch-demo-btns {
+  display: flex;
+  gap: 6px;
+}
+
+.branch-demo-btns button {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.branch-demo-btns button:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.branch-demo-btns button.active {
+  background: var(--accent-light);
+  border-color: var(--accent-light);
+  color: #0d2a12;
+}
+
+.branch-header,
+.branch-tree-container,
+.branch-categories {
+  position: relative;
+  z-index: 1;
 }
 
 .branch-header {
@@ -12,6 +250,24 @@
   margin-bottom: 0.5rem;
   flex-shrink: 0;
   padding-top: 0.75rem;
+}
+
+.branch-header-top {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.branch-level-badge {
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 0.25rem 0.6rem;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.15);
+  color: var(--accent-bright);
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .branch-logo {
