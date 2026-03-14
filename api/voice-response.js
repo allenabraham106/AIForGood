@@ -1,5 +1,22 @@
 import { GoogleGenAI } from "@google/genai";
 
+function normalizedWords(s) {
+  if (typeof s !== "string") return [];
+  return s.toLowerCase().replace(/[^\w\s']/g, " ").replace(/\s+/g, " ").trim().split(/\s+/).filter(Boolean);
+}
+
+function transcriptMatchesTarget(transcript, target) {
+  if (!target || !transcript) return false;
+  const tw = normalizedWords(transcript);
+  const ew = normalizedWords(target);
+  if (ew.length === 0) return false;
+  let j = 0;
+  for (let i = 0; i < tw.length && j < ew.length; i++) {
+    if (tw[i] === ew[j]) j++;
+  }
+  return j === ew.length;
+}
+
 const SYSTEM = `Judge if the learner said the target phrase. The text is from speech-to-text (ignore punctuation/caps). Same meaning and key words = correct. Reply with only a JSON object: {"correct": true or false, "message": "short phrase under 6 words"}. Target: women with ~5% English literacy — use only the simplest words. If correct: "Good!" or "Yes!". If incorrect: "Try again." or "Say it again."`;
 
 export default async function handler(req, res) {
@@ -21,6 +38,11 @@ export default async function handler(req, res) {
     const body = req.body && typeof req.body === "object" ? req.body : {};
     const transcript = (typeof body.transcript === "string" ? body.transcript.trim() : "") || "(no speech heard)";
     const expectedPhrase = typeof body.expectedPhrase === "string" ? body.expectedPhrase.trim() : "";
+
+    if (transcript !== "(no speech heard)" && expectedPhrase && transcriptMatchesTarget(transcript, expectedPhrase)) {
+      res.setHeader("Cache-Control", "s-maxage=0, no-store");
+      return res.status(200).json({ answer: "Good!", correct: true });
+    }
 
     const ai = new GoogleGenAI({ apiKey });
     const response = await ai.models.generateContent({
