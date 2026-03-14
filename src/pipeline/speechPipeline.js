@@ -273,8 +273,47 @@
       settings.preferredVoiceName = name || "";
     }
 
+    async function playReflectionOnly(scenario, callbacks) {
+      const safeCallbacks = callbacks || {};
+      if (!scenario || !scenario.reflectionQuestion) {
+        return;
+      }
+      if (!supportsSpeechSynthesis()) {
+        throw new Error("Speech synthesis is not supported in this browser.");
+      }
+      stop();
+      const currentRunId = ++runId;
+      const voices = await loadVoices();
+      const voice = chooseVoice(voices, settings.preferredVoiceName);
+      if (safeCallbacks.onStateChange) {
+        safeCallbacks.onStateChange({
+          status: "playing",
+          phase: "reflection",
+          scenarioId: scenario.id,
+          text: scenario.reflectionQuestion
+        });
+      }
+      await speakSegment(
+        scenario.reflectionQuestion,
+        voice,
+        settings.reflectionRate
+      );
+      if (currentRunId !== runId) return;
+      if (safeCallbacks.onStateChange) {
+        safeCallbacks.onStateChange({
+          status: "complete",
+          phase: "reflection",
+          scenarioId: scenario.id
+        });
+      }
+      if (safeCallbacks.onComplete) {
+        safeCallbacks.onComplete({ scenarioId: scenario.id });
+      }
+    }
+
     return {
       playScenario: playScenario,
+      playReflectionOnly: playReflectionOnly,
       stop: stop,
       loadVoices: loadVoices,
       setPreferredVoiceName: setPreferredVoiceName,

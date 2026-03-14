@@ -16,7 +16,7 @@
         "Offering something small, like water, shows respect and care."
       ],
       keyPhrase: "I will be gentle. I am here to help.",
-      reflectionQuestion: "What would you say to help a nervous resident feel safe?"
+      reflectionQuestion: "What could you say to help them feel safe?"
     },
     {
       id: "resident-refuses-help",
@@ -36,7 +36,7 @@
         "A calm voice can lower stress for both people."
       ],
       keyPhrase: "That is okay. We can go slowly.",
-      reflectionQuestion: "What can you say when a resident says no?"
+      reflectionQuestion: "What can you say when they say no?"
     },
     {
       id: "talking-to-supervisor",
@@ -56,7 +56,7 @@
         "Short, direct updates help supervisors act quickly."
       ],
       keyPhrase: "I need help with room twelve.",
-      reflectionQuestion: "How would you ask your supervisor for help clearly?"
+      reflectionQuestion: "How do you ask your supervisor for help?"
     },
     {
       id: "small-emergency",
@@ -76,7 +76,7 @@
         "Calling for help quickly is part of good care, not a mistake."
       ],
       keyPhrase: "Please stay seated. Help is coming.",
-      reflectionQuestion: "What would you say to keep someone calm?"
+      reflectionQuestion: "What do you say to keep them calm and safe?"
     }
   ];
 

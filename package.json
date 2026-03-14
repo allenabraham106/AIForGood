@@ -4,12 +4,18 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
+    "copy-demo": "node scripts/copy-demo.js",
     "dev": "vite",
+    "prebuild": "npm run copy-demo",
     "build": "vite build",
     "preview": "vite preview"
   },
   "dependencies": {
+<<<<<<< HEAD
     "framer-motion": "^12.36.0",
+=======
+    "@google/genai": "^1.45.0",
+>>>>>>> origin/main
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.20.0"
