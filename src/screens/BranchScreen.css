@@ -396,3 +396,31 @@
   font-weight: 600;
   line-height: 1;
 }
+
+.branch-footer {
+  padding: 14px 0 20px;
+  text-align: center;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 1;
+}
+
+.branch-demo-link {
+  display: inline-block;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #0d2a12;
+  background: var(--accent-light);
+  padding: 10px 20px;
+  border-radius: 999px;
+  text-decoration: none;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
+  transition: transform 0.15s ease, box-shadow 0.2s ease;
+}
+
+.branch-demo-link:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(125, 168, 130, 0.4);
+  text-decoration: none;
+}
