@@ -1,4 +1,4 @@
-VERCEL LINK - https://ai-for-good-2hj5.vercel.app/   (VISIT HERE)
+VERCEL LINK - https://ai-for-good-inky.vercel.app/   (VISIT HERE)
 
 # AIForGood — Branch (Language Learning for Rohingya Community)
 
