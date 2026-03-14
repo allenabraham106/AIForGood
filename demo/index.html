@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CareVoice Role 3 Demo</title>
+    <link rel="stylesheet" href="./styles.css" />
+    <script src="../src/pipeline/scenarios.js" defer></script>
+    <script src="../src/pipeline/speechPipeline.js" defer></script>
+    <script src="./app.js" defer></script>
+  </head>
+  <body>
+    <main class="shell">
+      <section class="hero">
+        <p class="eyebrow">CareVoice</p>
+        <h1>Role 3 Audio Pipeline Demo</h1>
+        <p class="lede">
+          Tap a lesson and the browser will speak the dialogue, cultural tip, key phrase,
+          and reflection question in sequence.
+        </p>
+        <div class="status-row">
+          <span class="status-pill" data-status-pill>Idle</span>
+          <label class="voice-picker">
+            Voice
+            <select data-voice-select></select>
+          </label>
+        </div>
+      </section>
+
+      <section class="grid">
+        <aside class="panel">
+          <div class="panel-heading">
+            <h2>Scenarios</h2>
+            <button class="ghost-button" type="button" data-reset-progress>
+              Reset demo progress
+            </button>
+          </div>
+          <div class="scenario-list" data-scenario-list></div>
+        </aside>
+
+        <section class="panel detail-panel">
+          <div class="detail-copy">
+            <p class="detail-label">Current lesson</p>
+            <h2 data-title></h2>
+            <p class="detail-context" data-context></p>
+            <div class="lesson-meta">
+              <span data-completion-chip class="completion-chip">Not completed</span>
+              <span class="phase-chip" data-phase-chip>Waiting to start</span>
+            </div>
+          </div>
+
+          <div class="controls">
+            <button class="primary-button" type="button" data-play-button>
+              Play lesson
+            </button>
+            <button class="secondary-button" type="button" data-stop-button disabled>
+              Stop
+            </button>
+            <button class="ghost-button" type="button" data-complete-button disabled>
+              Got it
+            </button>
+          </div>
+
+          <div class="segments">
+            <h3>Pipeline steps</h3>
+            <ol class="segment-list" data-segment-list></ol>
+          </div>
+
+          <div class="integration-note">
+            <strong>Integration note:</strong>
+            Replace the demo completion handler with Person 2's
+            <code>markComplete(scenarioId)</code>.
+          </div>
+        </section>
+      </section>
+    </main>
+  </body>
+</html>
