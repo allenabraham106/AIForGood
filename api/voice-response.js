@@ -10,6 +10,7 @@ Give one short, encouraging response (1–2 sentences). Rules:
 Return only the response text. No quotes or labels.`;
 
 export default async function handler(req, res) {
+  try {
   if (req.method !== "POST") {
     res.status(405).json({ error: "Method not allowed" });
     return;
@@ -74,6 +75,13 @@ export default async function handler(req, res) {
     res.status(502).json({
       error: "Could not get response",
       detail: err?.message || "Unknown error",
+    });
+  }
+  } catch (err) {
+    console.error("Voice response handler error:", err);
+    res.status(500).json({
+      error: "Voice API error",
+      detail: err?.message || String(err),
     });
   }
 }
