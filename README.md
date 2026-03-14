@@ -19,6 +19,15 @@ CareVoice role 3 starter pipeline for the hackathon demo. This repo contains a n
 - A simple completion handoff point for the tree/progress logic
 - A tiny browser demo so the team can test the sequencing before the full UI lands
 
+### Reflection-question API (3A backend)
+
+The demo uses **Google Gemini** (sponsor stack) to generate reflection questions instead of the hardcoded ones in `scenarios.js`:
+
+- **API route:** `POST /api/reflection-question` with body `{ "promptContext": "..." }` (use `CareVoiceScenarios.buildReflectionPromptContext(scenario)`).
+- **Response:** `{ "question": "Generated question text" }`.
+- **Setup:** Set `GEMINI_API_KEY` (or `GOOGLE_API_KEY`) in your environment (e.g. Vercel project settings, or `.env.local` when running `npx vercel dev`). Get a key at [Google AI Studio](https://aistudio.google.com/apikey). See `.env.example`.
+- If the API is missing or fails, the demo falls back to the hardcoded `scenario.reflectionQuestion`.
+
 ### What you do not need yet
 
 - No Rohingya API
@@ -54,10 +63,9 @@ Person 2:
 - Replace the demo `markScenarioComplete` function with `markComplete(scenarioId)`.
 - The pipeline intentionally waits for a user action on `Got it` before marking completion.
 
-Future Claude step:
-- Keep the existing system prompt.
-- Replace `scenario.reflectionQuestion` with a question returned by your API route.
-- Use `buildReflectionPromptContext(scenario)` as the scenario payload.
+Gemini API (implemented):
+- `POST /api/reflection-question` returns a generated question; demo uses it when available.
+- Use `buildReflectionPromptContext(scenario)` as the request payload.
 
 ---
 

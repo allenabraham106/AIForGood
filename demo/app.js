@@ -12,6 +12,7 @@
   const playButton = document.querySelector("[data-play-button]");
   const stopButton = document.querySelector("[data-stop-button]");
   const completeButton = document.querySelector("[data-complete-button]");
+  const hearAgainButton = document.querySelector("[data-hear-again-button]");
   const resetProgressButton = document.querySelector("[data-reset-progress]");
   const voiceSelect = document.querySelector("[data-voice-select]");
 
@@ -22,6 +23,7 @@
   let completedScenarioIds = loadCompletedScenarioIds();
   let activePhase = "";
   let readyToComplete = false;
+  let lastPlayedScenarioWithReflection = null;
 
   renderScenarioCards();
   renderSelectedScenario();
@@ -38,6 +40,7 @@
     const scenario = getSelectedScenario();
     readyToComplete = false;
     completeButton.disabled = true;
+    hearAgainButton.disabled = true;
     stopButton.disabled = false;
     playButton.disabled = true;
     activePhase = "";
@@ -45,6 +48,45 @@
     setStatus("Playing " + scenario.title + ".", false);
     phaseChipElement.textContent = "Starting lesson";
 
+    fetchReflectionThenPlay(scenario);
+  });
+
+  function fetchReflectionThenPlay(scenario) {
+    const promptContext = globalThis.CareVoiceScenarios.buildReflectionPromptContext(scenario);
+    const apiUrl = "/api/reflection-question";
+    const controller = new AbortController();
+    const timeoutId = setTimeout(function () {
+      controller.abort();
+    }, 5000);
+
+    fetch(apiUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ promptContext: promptContext }),
+      signal: controller.signal
+    })
+      .then(function (res) {
+        clearTimeout(timeoutId);
+        if (!res.ok) {
+          throw new Error("API " + res.status);
+        }
+        return res.json();
+      })
+      .then(function (data) {
+        if (data && typeof data.question === "string" && data.question.trim()) {
+          scenario = Object.assign({}, scenario, { reflectionQuestion: data.question.trim() });
+        }
+        lastPlayedScenarioWithReflection = scenario;
+        runPlayScenario(scenario);
+      })
+      .catch(function () {
+        clearTimeout(timeoutId);
+        lastPlayedScenarioWithReflection = scenario;
+        runPlayScenario(scenario);
+      });
+  }
+
+  function runPlayScenario(scenario) {
     pipeline.playScenario(scenario, {
       onSegmentStart: function (event) {
         activePhase = event.phase;
@@ -65,6 +107,7 @@
         playButton.disabled = false;
         stopButton.disabled = true;
         completeButton.disabled = false;
+        hearAgainButton.disabled = false;
         activePhase = "";
         renderSegmentList();
       }
@@ -72,10 +115,28 @@
       playButton.disabled = false;
       stopButton.disabled = true;
       completeButton.disabled = true;
+      hearAgainButton.disabled = true;
       activePhase = "";
       renderSegmentList();
       phaseChipElement.textContent = "Playback failed";
       setStatus(error.message, true);
+    });
+  }
+
+  hearAgainButton.addEventListener("click", function () {
+    if (!lastPlayedScenarioWithReflection) return;
+    hearAgainButton.disabled = true;
+    setStatus("Playing reflection question again.", false);
+    phaseChipElement.textContent = "Playing reflection question";
+    pipeline.playReflectionOnly(lastPlayedScenarioWithReflection, {
+      onComplete: function () {
+        hearAgainButton.disabled = false;
+        phaseChipElement.textContent = "Lesson finished";
+        setStatus("Lesson finished. Tap Got it to mark completion.", false);
+      }
+    }).catch(function () {
+      hearAgainButton.disabled = false;
+      setStatus("Playback failed.", true);
     });
   });
 
@@ -86,6 +147,7 @@
     playButton.disabled = false;
     stopButton.disabled = true;
     completeButton.disabled = !readyToComplete;
+    hearAgainButton.disabled = true;
     phaseChipElement.textContent = "Stopped";
     setStatus("Playback stopped.", false);
   });
@@ -95,6 +157,7 @@
     markScenarioComplete(scenario.id);
     readyToComplete = false;
     completeButton.disabled = true;
+    hearAgainButton.disabled = true;
     phaseChipElement.textContent = "Completion sent";
     setStatus("Scenario marked complete. Replace this with Person 2's markComplete call.", false);
   });

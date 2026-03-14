@@ -10,7 +10,7 @@
 
 ## Person 3A — Remaining work (reflection questions)
 
-**Own:** Claude reflection-question side — **not** the audio pipeline.
+**Own:** Reflection-question side (Gemini API, sponsor stack) — **not** the audio pipeline.
 
 1. Take Person 4’s final scenario scripts and write or generate **1 reflection question per scenario** (4 total).
 2. Each question must be:
@@ -20,7 +20,7 @@
    - **Spoken naturally** (sounds good when read aloud)
    - **No jargon**
 3. Deliver the **final 4 questions** so they can be dropped into `src/pipeline/scenarios.js` (field: `reflectionQuestion` per scenario).
-4. If there’s time: set up the Claude API call so the hardcoded questions can later be replaced with generated ones.
+4. If there’s time: set up the Gemini API call so the hardcoded questions can later be replaced with generated ones (done: `POST /api/reflection-question`).
 5. After that: help Person 5 explain the technical architecture in the pitch.
 
 **Person 3A does NOT touch:**  
@@ -28,15 +28,15 @@ Web Speech API, play button logic, audio sequencing, “Got it” / replay butto
 
 ### Handoff message for Person 3A
 
-> Can you take over 3A? I already built the 3B audio pipeline and demo flow. I need you to own the reflection-question side: review Person 4’s scripts, produce 4 final reflection questions that are **max 10 words**, **beginner English**, **encouraging**, and **natural when spoken aloud**. If time allows, set up the Claude API call for those questions, but the first priority is delivering the 4 clean questions so I can plug them into `scenarios.js`.
+> Can you take over 3A? I already built the 3B audio pipeline and demo flow. I need you to own the reflection-question side: review Person 4’s scripts, produce 4 final reflection questions that are **max 10 words**, **beginner English**, **encouraging**, and **natural when spoken aloud**. If time allows, set up the Gemini API call for those questions, but the first priority is delivering the 4 clean questions so I can plug them into `scenarios.js`.
 
 ### Priority split
 
 | Priority   | Task |
 |-----------|------|
-| **Must-have** | Write/finalize the 4 reflection questions |
-| **Nice-to-have** | Claude API route for generated questions |
-| **Extra if ahead** | Help with judge-facing technical explanation |
+| **Must-have** | Write/finalize the 4 reflection questions ✅ |
+| **Nice-to-have** | Gemini API route for generated questions ✅ |
+| **Extra if ahead** | Help with judge-facing technical explanation ✅ (see `docs/TECH-ARCHITECTURE-FOR-PITCH.md`) |
 
 ---
 
@@ -46,11 +46,11 @@ File: **`src/pipeline/scenarios.js`**
 
 Each scenario object has a `reflectionQuestion` field. The four scenarios (and current placeholder questions) are:
 
-| Scenario id              | Title                         | Current `reflectionQuestion` |
+| Scenario id              | Title                         | Final `reflectionQuestion` |
 |--------------------------|-------------------------------|------------------------------|
-| `greeting-resident`      | Greeting a New Resident       | "What would you say to help a nervous resident feel safe?" |
-| `resident-refuses-help`  | Responding With Patience      | "What can you say when a resident says no?" |
-| `talking-to-supervisor`  | Talking to Your Supervisor    | "How would you ask your supervisor for help clearly?" |
-| `small-emergency`        | Handling a Small Emergency    | "What would you say to keep someone calm?" |
+| `greeting-resident`      | Greeting a New Resident       | "What could you say to help them feel safe?" |
+| `resident-refuses-help`  | Responding With Patience      | "What can you say when they say no?" |
+| `talking-to-supervisor`  | Talking to Your Supervisor    | "How do you ask your supervisor for help?" |
+| `small-emergency`        | Handling a Small Emergency    | "What do you say to keep them calm and safe?" |
 
-Person 3A should replace these with final versions that meet: max 10 words, beginner English, encouraging, natural when spoken, no jargon.
+All four meet: max 10 words, beginner English, encouraging, natural when spoken, no jargon. Gemini API can override at runtime when configured.
