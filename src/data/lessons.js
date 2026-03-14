@@ -9,7 +9,7 @@ export const SCENARIOS = {
     color: 'blue',
     lessons: [
       { id: 'b1', prompt: 'Say it back:', phrase: 'Good morning. How are you?', scenario: 'greeting' },
-      { id: 'b2', prompt: 'Say it back:', phrase: 'My name is ___. I am new.', scenario: 'introduction' },
+      { id: 'b2', prompt: 'Say it back:', phrase: 'My name is Amara. I am new.', scenario: 'introduction' },
       { id: 'b3', prompt: 'Say it back:', phrase: 'Yes, I need help, please.', scenario: 'help' },
       { id: 'b4', prompt: 'Say it back:', phrase: 'Thank you.', scenario: 'gratitude' },
     ],
