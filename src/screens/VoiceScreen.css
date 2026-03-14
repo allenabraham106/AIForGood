@@ -288,6 +288,47 @@
   letter-spacing: 0.02em;
 }
 
+.voice-bengali-block {
+  margin-top: 0.5rem;
+  text-align: center;
+}
+
+.voice-phrase-bengali {
+  font-size: 0.88rem;
+  line-height: 1.45;
+  color: rgba(255, 255, 255, 0.75);
+  text-align: center;
+  margin: 0;
+  letter-spacing: 0.02em;
+}
+
+.voice-phrase-pronunciation {
+  font-size: 0.8rem;
+  line-height: 1.4;
+  color: rgba(255, 255, 255, 0.6);
+  font-style: italic;
+  text-align: center;
+  margin: 0.25rem 0 0 0;
+}
+
+.voice-bengali-listen {
+  display: inline-block;
+  margin-top: 0.5rem;
+  padding: 0.35rem 0.75rem;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.voice-bengali-listen:hover {
+  background: rgba(255, 255, 255, 0.18);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
 .voice-feedback {
   margin-top: 0.75rem;
   padding: 0.6rem 0.75rem;

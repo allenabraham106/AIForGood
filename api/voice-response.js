@@ -1,5 +1,22 @@
 import { GoogleGenAI } from "@google/genai";
 
+function normalizedWords(s) {
+  if (typeof s !== "string") return [];
+  return s.toLowerCase().replace(/[^\w\s']/g, " ").replace(/\s+/g, " ").trim().split(/\s+/).filter(Boolean);
+}
+
+function transcriptMatchesTarget(transcript, target) {
+  if (!target || !transcript) return false;
+  const tw = normalizedWords(transcript);
+  const ew = normalizedWords(target);
+  if (ew.length === 0) return false;
+  let j = 0;
+  for (let i = 0; i < tw.length && j < ew.length; i++) {
+    if (tw[i] === ew[j]) j++;
+  }
+  return j === ew.length;
+}
+
 const SYSTEM = `This is a REPEAT exercise. The learner listened to a phrase and tried to say it back. They are practicing pronunciation, not having a conversation.
 
 Be LENIENT. Accept as correct if:
@@ -31,6 +48,11 @@ export default async function handler(req, res) {
     const body = req.body && typeof req.body === "object" ? req.body : {};
     const transcript = (typeof body.transcript === "string" ? body.transcript.trim() : "") || "(no speech heard)";
     const expectedPhrase = typeof body.expectedPhrase === "string" ? body.expectedPhrase.trim() : "";
+
+    if (transcript !== "(no speech heard)" && expectedPhrase && transcriptMatchesTarget(transcript, expectedPhrase)) {
+      res.setHeader("Cache-Control", "s-maxage=0, no-store");
+      return res.status(200).json({ answer: "Good!", correct: true });
+    }
 
     const ai = new GoogleGenAI({ apiKey });
     const response = await ai.models.generateContent({
