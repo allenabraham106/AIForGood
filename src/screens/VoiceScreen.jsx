@@ -34,6 +34,8 @@ export default function VoiceScreen() {
   const [answer, setAnswer] = useState('')
   const [phraseCorrect, setPhraseCorrect] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [bengaliTranslation, setBengaliTranslation] = useState('')
+  const [bengaliPronunciation, setBengaliPronunciation] = useState('')
   const recognitionRef = useRef(null)
   const transcriptAccumulatorRef = useRef('')
   const didRequestResponseRef = useRef(false)
@@ -49,7 +51,28 @@ export default function VoiceScreen() {
     setPhraseCorrect(false)
     setAnswer('')
     setTranscript('')
+    setBengaliTranslation('')
+    setBengaliPronunciation('')
   }, [lessonId])
+
+  useEffect(() => {
+    if (!lesson?.phrase) return
+    let cancelled = false
+    fetch('/api/translate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text: lesson.phrase }),
+    })
+      .then((r) => r.ok ? r.json() : null)
+      .then((data) => {
+        if (!cancelled && data?.translated) {
+          setBengaliTranslation(data.translated)
+          setBengaliPronunciation(data.pronunciation || '')
+        }
+      })
+      .catch(() => {})
+    return () => { cancelled = true }
+  }, [lesson?.phrase])
 
   useEffect(() => {
     if (!isRecording) return
@@ -255,7 +278,36 @@ export default function VoiceScreen() {
           ))}
         </div>
         {lesson?.phrase && (
-          <p className="voice-phrase">{lesson.phrase}</p>
+          <>
+            <p className="voice-phrase">{lesson.phrase}</p>
+            {bengaliTranslation && (
+              <div className="voice-bengali-block">
+                <p className="voice-phrase-bengali" lang="bn" aria-label="Bengali translation">
+                  বাংলা: {bengaliTranslation}
+                </p>
+                {bengaliPronunciation && (
+                  <p className="voice-phrase-pronunciation" aria-label="Bengali pronunciation">
+                    Pronunciation: {bengaliPronunciation}
+                  </p>
+                )}
+                {bengaliTranslation && 'speechSynthesis' in window && (
+                  <button
+                    type="button"
+                    className="voice-bengali-listen"
+                    onClick={() => {
+                      const u = new SpeechSynthesisUtterance(bengaliTranslation)
+                      u.lang = 'bn'
+                      u.rate = 0.85
+                      window.speechSynthesis.speak(u)
+                    }}
+                    aria-label="Listen to Bengali pronunciation"
+                  >
+                    Listen (Bengali)
+                  </button>
+                )}
+              </div>
+            )}
+          </>
         )}
         {(transcript || answer || isLoading) && (
           <div className={`voice-feedback ${answer && !isLoading && !phraseCorrect ? 'voice-feedback-incorrect' : ''}`} aria-live="polite">
