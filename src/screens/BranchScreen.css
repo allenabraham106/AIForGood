@@ -1,7 +1,7 @@
 .branch-screen {
   min-height: 100vh;
   min-height: 100dvh;
-  padding: 1rem 16px 1rem;
+  padding: 0 16px 0;
   display: flex;
   flex-direction: column;
   background: radial-gradient(ellipse at 50% 40%, #0d2a12 0%, #060e07 70%);
@@ -9,8 +9,9 @@
 
 .branch-header {
   text-align: center;
-  margin-bottom: 1.25rem;
+  margin-bottom: 0.5rem;
   flex-shrink: 0;
+  padding-top: 0.75rem;
 }
 
 .branch-logo {
@@ -49,26 +50,24 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0.5rem 1rem;
-  overflow: visible;
+  padding: 0 1rem;
+  overflow: hidden;
 }
 
 .branch-tree-svg {
   width: 100%;
-  height: auto;
-  max-height: min(55vh, 420px);
+  height: 100%;
+  max-height: min(55vh, 400px);
   object-fit: contain;
-  transform: scale(1.4);
-  transform-origin: center center;
 }
 
 .branch-categories {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 12px;
-  margin-top: 0.75rem;
+  margin-top: 0;
   flex-shrink: 0;
-  padding: 0 16px;
+  padding: 0;
   width: 100%;
   box-sizing: border-box;
 }
@@ -90,8 +89,13 @@
 }
 
 .category-btn.active {
-  border-color: rgba(122, 184, 122, 0.4);
-  box-shadow: 0 0 20px rgba(122, 184, 122, 0.15), inset 0 0 0 1px rgba(122, 184, 122, 0.1);
+  border-color: rgba(125, 168, 130, 0.5);
+  box-shadow: 0 0 24px rgba(125, 168, 130, 0.25), inset 0 0 0 1px rgba(125, 168, 130, 0.15);
+}
+
+.category-btn.active.basics-active {
+  border-color: rgba(125, 168, 130, 0.6);
+  box-shadow: 0 0 28px rgba(125, 168, 130, 0.3), inset 0 0 0 1px rgba(125, 168, 130, 0.2);
 }
 
 .category-btn:not(.locked):hover {
@@ -127,8 +131,8 @@
 }
 
 .category-icon svg {
-  width: 36px;
-  height: 36px;
+  width: 28px;
+  height: 28px;
 }
 
 .category-progress {

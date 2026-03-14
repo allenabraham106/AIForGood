@@ -48,7 +48,7 @@ export const SCENARIOS = {
   },
 };
 
-// Tree node positions - each section is one branch, nodes share section color
+// Tree node positions — at branch endpoints (tips)
 export const TREE_NODES = [
   { id: 'b1', section: 'basics', x: 18, y: 72, type: 'speech' },
   { id: 'b2', section: 'basics', x: 10, y: 52, type: 'speech' },

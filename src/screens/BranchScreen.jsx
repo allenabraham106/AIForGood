@@ -43,10 +43,10 @@ export default function BranchScreen() {
 
   const CategoryIcon = ({ id }) => {
     switch (id) {
-      case 'basics': return <SproutIcon size={36} />
-      case 'speaking': return <SpeakIcon size={36} />
-      case 'community': return <PeopleIcon size={36} />
-      case 'progress': return <ChartIcon size={36} />
+      case 'basics': return <SproutIcon size={28} />
+      case 'speaking': return <SpeakIcon size={28} />
+      case 'community': return <PeopleIcon size={28} />
+      case 'progress': return <ChartIcon size={28} />
       default: return null
     }
   }
@@ -94,7 +94,7 @@ export default function BranchScreen() {
           return (
           <button
             key={key}
-            className={`category-btn ${isLocked ? 'locked' : ''} ${isSectionActive(key) ? 'active' : ''}`}
+            className={`category-btn ${isLocked ? 'locked' : ''} ${isSectionActive(key) ? 'active' : ''} ${key === 'basics' && isSectionActive(key) ? 'basics-active' : ''}`}
             onClick={() => handleCategoryClick(key)}
             disabled={isLocked}
             aria-label={key}
@@ -104,10 +104,10 @@ export default function BranchScreen() {
                 <LockIcon size={14} />
               </span>
             )}
-            <span className="category-icon" style={{ color: CATEGORY_COLORS[scenario.color] }}>
+            <span className="category-icon" style={{ color: isLocked ? 'var(--text-muted)' : '#7da882' }}>
               <CategoryIcon id={key} />
             </span>
-            <span className="category-progress" style={{ color: isLocked ? 'var(--text-muted)' : CATEGORY_COLORS[scenario.color] }}>
+            <span className="category-progress" style={{ color: isLocked ? 'var(--text-muted)' : '#7da882' }}>
               {label}
             </span>
           </button>
