@@ -13,7 +13,7 @@ export default async function handler(req, res) {
     if (!apiKey) {
       res.status(503).json({
         error: "Voice response API not configured",
-        hint: "Set GEMINI_API_KEY in Vercel environment and redeploy",
+        hint: "Local: add GEMINI_API_KEY=your_key to .env.local and run 'npx vercel dev' (not npm run dev). Production: set GEMINI_API_KEY in Vercel → Settings → Environment Variables, then redeploy.",
       });
       return;
     }

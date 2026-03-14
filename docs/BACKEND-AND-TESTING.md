@@ -124,6 +124,34 @@ This uses **Web Speech API (SpeechRecognition)** in the browser and the **voice-
 
 ---
 
+## Deployed site says "Voice API not configured"?
+
+The API needs **`GEMINI_API_KEY`** in the environment. On Vercel it is **not** read from `.env.local` (that’s only for local). You must set it in the dashboard and redeploy.
+
+1. **Get a key**  
+   [Google AI Studio](https://aistudio.google.com/apikey) → Create API key (works with Gemini 3 Flash and other models).
+
+2. **Add it in Vercel**  
+   - Open [vercel.com](https://vercel.com) → your **project** (CareVoice / AIForGood).  
+   - Go to **Settings** → **Environment Variables**.  
+   - Click **Add New**.  
+   - **Key:** `GEMINI_API_KEY` (exact spelling, all caps).  
+   - **Value:** paste your Gemini API key.  
+   - **Environments:** check **Production** (and **Preview** if you use preview URLs).  
+   - Save.
+
+3. **Redeploy**  
+   Env vars are applied at **deploy** time. After adding or changing the variable:  
+   - **Deployments** → open the **⋯** menu on the latest deployment → **Redeploy**.  
+   Or push a new commit to trigger a deploy.
+
+4. **Test**  
+   Open the **production** URL (e.g. `https://your-project.vercel.app`), go to a lesson, use the mic. You should get a coach response instead of "Voice API not configured".
+
+**If it still says not configured:** Confirm the variable name is exactly `GEMINI_API_KEY` (no space, no typo). Confirm you redeployed **after** adding it. Confirm you’re on the same Vercel project that serves the URL you’re opening.
+
+---
+
 ## Demo not showing on Vercel?
 
 If the app works locally but the **demo** (or the full app) doesn’t show on the deployed site:
