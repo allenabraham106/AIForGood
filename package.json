@@ -11,11 +11,6 @@
     "preview": "vite preview"
   },
   "dependencies": {
-<<<<<<< HEAD
-    "framer-motion": "^12.36.0",
-=======
-    "@google/genai": "^1.45.0",
->>>>>>> origin/main
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.20.0"
