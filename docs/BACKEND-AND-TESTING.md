@@ -93,6 +93,26 @@ There are no other API routes, no database, and no auth. The rest of the app is 
 
 ---
 
+## Demo not showing on Vercel?
+
+If the app works locally but the **demo** (or the full app) doesn’t show on the deployed site:
+
+1. **Build must run the copy step**  
+   The demo is only in the build if **`npm run build`** runs (it runs `copy-demo` then `vite build`).  
+   In Vercel: **Project → Settings → General → Build & Development Settings**  
+   - **Build Command:** set to **`npm run build`** (not `vite build`).  
+   - **Output Directory:** `dist` (or leave default if it’s already `dist`).
+
+2. **Redeploy**  
+   After changing settings or pushing the fix: **Deployments → … on latest → Redeploy**.
+
+3. **Open the demo**  
+   Use **`https://YOUR-URL.vercel.app/demo/`** (trailing slash can matter). The main app is at `/`, the demo at `/demo/`.
+
+The repo’s `vercel.json` sets `buildCommand` to `npm run build` so the copy step runs; if your project overrides the build command in the dashboard, it must be `npm run build`.
+
+---
+
 ## How to test on the deployed site
 
 Use your real Vercel URL (e.g. `https://aiforgood-six.vercel.app`).

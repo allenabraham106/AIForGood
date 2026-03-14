@@ -98,10 +98,24 @@ export function NextIcon({ size = 24 }) {
 
 export function MicIcon({ size = 64 }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 64 64" fill="none" aria-hidden>
-      <circle cx="32" cy="32" r="28" stroke="currentColor" strokeWidth="2" />
-      <path d="M32 12V32M24 32H40M28 40H36M30 44H34" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-      <path d="M32 36V44" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+    <svg width={size} height={size} viewBox="0 0 48 48" fill="none" aria-hidden>
+      {/* Microphone capsule — vertical pill shape */}
+      <rect
+        x="18"
+        y="10"
+        width="12"
+        height="18"
+        rx="6"
+        stroke="currentColor"
+        strokeWidth="2"
+      />
+      {/* Microphone stand */}
+      <path
+        d="M24 28v6M18 34h12"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
     </svg>
   )
 }

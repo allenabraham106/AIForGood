@@ -140,7 +140,6 @@ export default function BranchScreen() {
         {Object.entries(SCENARIOS).map(([key, scenario]) => {
           const isLocked = scenario.locked || !isSectionActive(key)
           const completed = getCompletedCount(key)
-          const label = scenario.locked ? '0/4' : `${completed}/4`
           return (
           <button
             key={key}
@@ -157,9 +156,13 @@ export default function BranchScreen() {
             <span className="category-icon" style={{ color: isLocked ? 'var(--text-muted)' : '#7da882' }}>
               <CategoryIcon id={key} />
             </span>
-            <span className="category-progress" style={{ color: isLocked ? 'var(--text-muted)' : '#7da882' }}>
-              {label}
-            </span>
+            {!scenario.locked && (
+              <span className="category-dots" aria-hidden>
+                {[0, 1, 2, 3].map((i) => (
+                  <span key={i} className={`category-dot ${i < completed ? 'done' : ''}`} />
+                ))}
+              </span>
+            )}
           </button>
         )})}
       </nav>
