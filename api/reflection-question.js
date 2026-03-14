@@ -1,12 +1,14 @@
 import { GoogleGenAI } from "@google/genai";
 
-const INSTRUCTION = `You generate a single reflection question for a language-learning scenario.
+const INSTRUCTION = `You generate a single reflection question for a workplace language-learning scenario.
+Target: Women with ~5% English literacy — use only the simplest words.
 Rules:
 - Exactly one short question.
-- Maximum 10 words.
-- Beginner-level English only.
+- Maximum 6 words.
+- Very simple English only (e.g., "What do you say?", "How do you help?").
+- Focus on workplace (care, work, talking to boss or coworkers).
 - Encouraging and natural when spoken aloud.
-- No jargon or complex words.
+- No jargon. No complex words.
 - Return only the question text, nothing else.`;
 
 export default async function handler(req, res) {

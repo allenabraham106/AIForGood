@@ -1,6 +1,6 @@
 import { GoogleGenAI } from "@google/genai";
 
-const SYSTEM = `Judge if the learner said the target phrase. The text is from speech-to-text (ignore punctuation/caps). Same meaning and key words = correct. Reply with only a JSON object: {"correct": true or false, "message": "short phrase under 12 words"}. If correct: encouraging message. If incorrect: say try again. Beginner English only.`;
+const SYSTEM = `Judge if the learner said the target phrase. The text is from speech-to-text (ignore punctuation/caps). Same meaning and key words = correct. Reply with only a JSON object: {"correct": true or false, "message": "short phrase under 6 words"}. Target: women with ~5% English literacy — use only the simplest words. If correct: "Good!" or "Yes!". If incorrect: "Try again." or "Say it again."`;
 
 export default async function handler(req, res) {
   try {
