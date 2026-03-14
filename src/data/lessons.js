@@ -34,7 +34,7 @@ export const SCENARIOS = {
     lessons: [
       { id: 'c1', prompt: 'Say it back:', phrase: 'I am looking for work.', scenario: 'employment' },
       { id: 'c2', prompt: 'Say it back:', phrase: 'What time do I start?', scenario: 'workplace' },
-      { id: 'c3', prompt: 'Say it back:', phrase: 'I need help. Room twelve.', scenario: 'workplace' },
+      { id: 'c3', prompt: 'Say it back:', phrase: 'I need help here.', scenario: 'workplace' },
       { id: 'c4', prompt: 'Say it back:', phrase: 'Sorry. Repeat?', scenario: 'workplace' },
     ],
   },
