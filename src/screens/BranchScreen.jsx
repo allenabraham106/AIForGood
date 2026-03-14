@@ -1,7 +1,12 @@
-import { useNavigate } from 'react-router-dom'
+import { useState } from 'react'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import LeafLogo from '../components/LeafLogo'
 import TreeNode from '../components/TreeNode'
 import TreeBranches from '../components/TreeBranches'
+import Snowflakes from '../components/Snowflakes'
+import Stars from '../components/Stars'
+import Clouds from '../components/Clouds'
+import HappySun from '../components/HappySun'
 import {
   SproutIcon,
   SpeakIcon,
@@ -51,11 +56,56 @@ export default function BranchScreen() {
     }
   }
 
+  const [searchParams] = useSearchParams()
+  const isDemoMode = searchParams.get('demo') === '1'
+  const [demoLevel, setDemoLevel] = useState(1)
+
+  const realLevel = isSectionActive('progress') ? 4
+    : isSectionActive('community') ? 3
+    : isSectionActive('speaking') ? 2
+    : 1
+
+  const level = isDemoMode ? demoLevel : realLevel
+
+  const showSnowflakes = level === 1
+  const showStars = level === 2 || level === 3
+  const starsVariant = level === 2 ? 'night' : 'dawn'
+  const showSun = level === 4
+  const showClouds = level === 4
+
   return (
-    <div className="branch-screen">
+    <div className={`branch-screen branch-screen--level-${level}`}>
+      {isDemoMode && (
+        <div className="branch-demo" role="group" aria-label="Demo level selector">
+          <span className="branch-demo-label">Demo level:</span>
+          <div className="branch-demo-btns">
+            {[1, 2, 3, 4].map((n) => (
+              <button
+                key={n}
+                type="button"
+                className={level === n ? 'active' : ''}
+                onClick={() => setDemoLevel(n)}
+                aria-pressed={level === n}
+              >
+                {n}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+      {showSnowflakes && <Snowflakes />}
+      {showStars && <Stars variant={starsVariant} />}
+      {level === 3 && (
+        <div className="branch-dawn-glow" aria-hidden="true" />
+      )}
+      {showClouds && <Clouds />}
+      {showSun && <HappySun side="right" size={90} />}
       <header className="branch-header">
-        <LeafLogo size={28} className="branch-logo" />
-        <h1 className="branch-title">Branch</h1>
+        <div className="branch-header-top">
+          <LeafLogo size={28} className="branch-logo" />
+          <h1 className="branch-title">Branch</h1>
+          <span className="branch-level-badge">Level {level}</span>
+        </div>
         <div className="branch-progress-bar">
           <div className="branch-progress-fill" style={{ width: `${overallProgress * 100}%` }} />
         </div>
