@@ -6,8 +6,7 @@
   "scripts": {
     "copy-demo": "node scripts/copy-demo.js",
     "dev": "vite",
-    "prebuild": "npm run copy-demo",
-    "build": "vite build",
+    "build": "npm run copy-demo && vite build",
     "preview": "vite preview"
   },
   "dependencies": {
