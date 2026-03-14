@@ -1,9 +1,14 @@
 import { GoogleGenAI } from "@google/genai";
 
-const SYSTEM = `You are a coach judging whether a learner said the correct phrase. They were practicing a specific phrase.
-Respond with ONLY a JSON object, no other text. Two keys:
-- "correct": true only if what they said matches or is very close to the target phrase (same meaning, minor wording or pronunciation differences OK). false if wrong phrase, gibberish, or unrelated.
-- "message": a short phrase (max 12 words). If correct: encouraging (e.g. "Well done!"). If incorrect: say "Incorrect. Try again." or similar. Beginner English only.`;
+const SYSTEM = `You judge if a learner said the TARGET PHRASE. The learner spoke out loud; the text you get is from speech-to-text, so:
+- Ignore punctuation, capitalization, and spacing.
+- Words may be wrong (e.g. "how r you" for "how are you", "gonna" for "going to"). If the intended phrase is clear, count it as correct.
+- Compare MEANING and KEY WORDS to the target. If they said the same phrase (even with small transcript errors), correct = true.
+- Only set correct = false when they clearly said a DIFFERENT phrase, wrong language, gibberish, or unrelated words.
+
+Respond with ONLY a JSON object. Two keys:
+- "correct": boolean. true = they said the target phrase (or close enough); false = they did not.
+- "message": string, max 12 words. If correct: one short encouraging line (e.g. "Well done!", "Good job!"). If incorrect: your own short message telling them to try again (e.g. "Not quite. Try again.", "That wasn't it. Say the phrase again."). Beginner English only.`;
 
 export default async function handler(req, res) {
   try {
@@ -38,14 +43,16 @@ export default async function handler(req, res) {
   }
 
   const userSaid = transcript || "(no speech heard)";
-  const target = expectedPhrase ? ` They were practicing: "${expectedPhrase}."` : "";
+  const targetLine = expectedPhrase
+    ? `TARGET PHRASE they should say: "${expectedPhrase}"`
+    : "TARGET PHRASE: (none given)";
 
   const ai = new GoogleGenAI({ apiKey });
 
   try {
     const response = await ai.models.generateContent({
       model: "gemini-3-flash-preview",
-      contents: `${SYSTEM}\n\nWhat the learner said: "${userSaid}".${target}\n\nRespond with only the JSON object:`,
+      contents: `${SYSTEM}\n\n${targetLine}\nSpeech-to-text transcript of what they said: "${userSaid}"\n\nJudge by meaning and key words (transcript may lack punctuation or have small errors). Respond with only the JSON object:`,
       config: { maxOutputTokens: 120 },
     });
 
