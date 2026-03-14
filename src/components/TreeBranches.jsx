@@ -1,4 +1,4 @@
-import { SECTION_STATUS } from '../data/lessons'
+import { useProgress } from '../context/ProgressContext'
 
 const BRANCH = '#6b4423'
 const BRANCH_DIMMER = 'rgba(107, 68, 35, 0.45)'
@@ -10,9 +10,10 @@ const BARK = {
 }
 
 export default function TreeBranches() {
-  const basics = SECTION_STATUS.basics === 'active' ? BRANCH : BRANCH_DIMMER
-  const speaking = SECTION_STATUS.speaking === 'active' ? BRANCH : BRANCH_DIMMER
-  const community = SECTION_STATUS.community === 'active' ? BRANCH : BRANCH_DIMMER
+  const { isSectionActive } = useProgress()
+  const basics = isSectionActive('basics') ? BRANCH : BRANCH_DIMMER
+  const speaking = isSectionActive('speaking') ? BRANCH : BRANCH_DIMMER
+  const community = isSectionActive('community') ? BRANCH : BRANCH_DIMMER
 
   return (
     <g className="tree-branches">

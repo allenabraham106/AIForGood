@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { BackIcon, SpeakerIcon, MicIcon } from '../components/Icons'
+import { useProgress } from '../context/ProgressContext'
 import { SCENARIOS } from '../data/lessons'
 import './VoiceScreen.css'
 
 export default function VoiceScreen() {
   const { scenarioId, lessonId } = useParams()
   const navigate = useNavigate()
+  const { unlockNextAfterLesson } = useProgress()
   const [timer, setTimer] = useState(0)
   const [isRecording, setIsRecording] = useState(false)
   const [waveformBars] = useState(Array(12).fill(0.15))
@@ -38,6 +40,7 @@ export default function VoiceScreen() {
   }
 
   const handleNext = () => {
+    unlockNextAfterLesson(lessonId)
     if (nextLesson) {
       navigate(`/lesson/${scenarioId}/${nextLesson.id}`)
     } else {

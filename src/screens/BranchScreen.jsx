@@ -9,7 +9,8 @@ import {
   ChartIcon,
   LockIcon,
 } from '../components/Icons'
-import { SCENARIOS, TREE_NODES, SECTION_STATUS } from '../data/lessons'
+import { useProgress } from '../context/ProgressContext'
+import { SCENARIOS, TREE_NODES } from '../data/lessons'
 import './BranchScreen.css'
 
 const CATEGORY_COLORS = {
@@ -21,10 +22,13 @@ const CATEGORY_COLORS = {
 
 export default function BranchScreen() {
   const navigate = useNavigate()
-  const overallProgress = 0
+  const { getNodeStatus, isSectionActive, getCompletedCount } = useProgress()
+
+  const completedTotal = getCompletedCount('basics') + getCompletedCount('speaking') + getCompletedCount('community')
+  const overallProgress = completedTotal / 12
 
   const handleNodeClick = (node) => {
-    const status = SECTION_STATUS[node.section]
+    const status = getNodeStatus(node)
     if (status === 'locked') return
     navigate(`/lesson/${node.section}/${node.id}`)
   }
@@ -32,8 +36,7 @@ export default function BranchScreen() {
   const handleCategoryClick = (key) => {
     const scenario = SCENARIOS[key]
     if (scenario?.locked) return
-    const sectionLocked = SECTION_STATUS[key] === 'locked'
-    if (sectionLocked) return
+    if (!isSectionActive(key)) return
     const firstLesson = scenario?.lessons?.[0]
     if (firstLesson) navigate(`/lesson/${key}/${firstLesson.id}`)
   }
@@ -68,25 +71,30 @@ export default function BranchScreen() {
             </radialGradient>
           </defs>
           <TreeBranches />
-          {TREE_NODES.map((node) => (
-            <TreeNode
-              key={node.id}
-              node={node}
-              status={SECTION_STATUS[node.section]}
-              isClickable={SECTION_STATUS[node.section] === 'active'}
-              onClick={() => handleNodeClick(node)}
-            />
-          ))}
+          {TREE_NODES.map((node) => {
+            const status = getNodeStatus(node)
+            return (
+              <TreeNode
+                key={node.id}
+                node={node}
+                status={status}
+                isClickable={status === 'active'}
+                onClick={() => handleNodeClick(node)}
+              />
+            )
+          })}
         </svg>
       </main>
 
       <nav className="branch-categories">
         {Object.entries(SCENARIOS).map(([key, scenario]) => {
-          const isLocked = scenario.locked || SECTION_STATUS[key] === 'locked'
+          const isLocked = scenario.locked || !isSectionActive(key)
+          const completed = getCompletedCount(key)
+          const label = scenario.locked ? '0/4' : `${completed}/4`
           return (
           <button
             key={key}
-            className={`category-btn ${isLocked ? 'locked' : ''} ${SECTION_STATUS[key] === 'active' ? 'active' : ''}`}
+            className={`category-btn ${isLocked ? 'locked' : ''} ${isSectionActive(key) ? 'active' : ''}`}
             onClick={() => handleCategoryClick(key)}
             disabled={isLocked}
             aria-label={key}
@@ -100,7 +108,7 @@ export default function BranchScreen() {
               <CategoryIcon id={key} />
             </span>
             <span className="category-progress" style={{ color: isLocked ? 'var(--text-muted)' : CATEGORY_COLORS[scenario.color] }}>
-              {scenario.label}
+              {label}
             </span>
           </button>
         )})}

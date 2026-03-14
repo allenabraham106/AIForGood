@@ -48,13 +48,6 @@ export const SCENARIOS = {
   },
 };
 
-// Section status: 'active' = green (ready to level up), 'locked' = purple
-export const SECTION_STATUS = {
-  basics: 'active',
-  speaking: 'locked',
-  community: 'locked',
-};
-
 // Tree node positions - each section is one branch, nodes share section color
 export const TREE_NODES = [
   { id: 'b1', section: 'basics', x: 18, y: 72, type: 'speech' },
