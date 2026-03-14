@@ -2,20 +2,35 @@
 
 ## What the backend looks like
 
-You have **one** backend piece: a **Vercel serverless function**.
+You have **two** backend pieces: Vercel serverless functions.
+
+### 1. Reflection question (demo)
 
 | Item | Details |
 |------|---------|
-| **Path** | `api/reflection-question.js` (in the repo root) |
-| **URL on live site** | `https://your-site.vercel.app/api/reflection-question` |
-| **Method** | `POST` only |
-| **Request body** | JSON: `{ "promptContext": "string (scenario text)" }` |
-| **Success response** | `200` + `{ "question": "Generated question text" }` |
-| **Uses** | Google Gemini (`GEMINI_API_KEY` or `GOOGLE_API_KEY` in Vercel env) |
+| **Path** | `api/reflection-question.js` |
+| **URL** | `.../api/reflection-question` |
+| **Method** | `POST` |
+| **Request** | JSON: `{ "promptContext": "string" }` |
+| **Response** | `200` + `{ "question": "..." }` |
+| **Uses** | Gemini (`GEMINI_API_KEY` or `GOOGLE_API_KEY`) |
 
-**Flow:** Demo sends scenario text → function calls Gemini → returns one short reflection question. If the key isn’t set or the call fails, the function returns 503/502 and the **frontend** falls back to the 4 hardcoded questions in `scenarios.js`.
+**Flow:** Demo sends scenario text → Gemini returns one short reflection question. On failure, frontend uses hardcoded questions in `scenarios.js`.
 
-There are no other API routes, no database, and no auth. The rest of the app is static/frontend.
+### 2. Voice response (main app – lesson screen)
+
+| Item | Details |
+|------|---------|
+| **Path** | `api/voice-response.js` |
+| **URL** | `.../api/voice-response` |
+| **Method** | `POST` |
+| **Request** | JSON: `{ "transcript": "what user said", "expectedPhrase": "lesson phrase" }` |
+| **Response** | `200` + `{ "answer": "short coach response" }` |
+| **Uses** | Same Gemini key |
+
+**Flow:** User speaks on the lesson (Voice) screen → browser **Web Speech API (SpeechRecognition)** turns speech to text → app POSTs transcript + lesson phrase to this API → Gemini returns a short, encouraging coach response → app shows it and can speak it with TTS.
+
+No database or auth. Rest is static/frontend.
 
 ---
 
@@ -24,9 +39,11 @@ There are no other API routes, no database, and no auth. The rest of the app is 
 | Piece | Status |
 |-------|--------|
 | **Reflection API** | ✅ `api/reflection-question.js` — Gemini, error handling, response parsing |
-| **4 fallback questions** | ✅ In `src/pipeline/scenarios.js` — used when API fails or has no key |
+| **Voice response API** | ✅ `api/voice-response.js` — transcript + expected phrase → short coach answer (Gemini) |
+| **VoiceScreen → backend** | ✅ Web Speech API **SpeechRecognition** captures speech → POST to `/api/voice-response` → show + speak answer |
+| **4 fallback questions** | ✅ In `src/pipeline/scenarios.js` — used when reflection API fails or has no key |
 | **Demo calls API** | ✅ Before each Play, demo POSTs to `/api/reflection-question`; on success uses returned question, else fallback |
-| **Demo in build** | ✅ `prebuild` runs `copy-demo.js` → `public/demo/` → deployed as `/demo/` |
+| **Demo in build** | ✅ Build runs `copy-demo.js` → `public/demo/` → deployed as `/demo/` |
 | **Link from main app** | ✅ Branch screen footer: “CareVoice audio demo” → `/demo/` |
 
 ---
@@ -90,6 +107,20 @@ There are no other API routes, no database, and no auth. The rest of the app is 
 | Hear again | After lesson, click Hear again → only reflection plays |
 | Got it | Click Got it → scenario shows completed |
 | API (optional) | Use `vercel dev` + .env.local; in Network tab see POST /api/reflection-question 200 |
+
+---
+
+### Testing VoiceScreen: speak → get coach answer (main app)
+
+This uses **Web Speech API (SpeechRecognition)** in the browser and the **voice-response** API.
+
+1. **Open a lesson:** From the Branch screen, open any category and go into a **lesson** (e.g. “Hello, how are you?”).
+2. **Start recording:** Tap the **microphone** button. Allow the browser to use the mic if prompted.
+3. **Speak:** Say the phrase (or something close) in English.
+4. **Stop:** Tap the mic again to stop. The app sends what it heard to `/api/voice-response` with the lesson’s expected phrase.
+5. **Result:** You should see “You said: …” and a short **coach response** (and hear it via TTS if the browser supports it).
+
+**Requirements:** Chrome (or another browser with SpeechRecognition). Same env as above: `GEMINI_API_KEY` in `.env.local` when using `npx vercel dev`, or set in Vercel for the deployed site. In Network tab you should see **POST `/api/voice-response`** with **200** and `{ "answer": "..." }`.
 
 ---
 

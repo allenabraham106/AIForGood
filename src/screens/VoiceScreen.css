@@ -278,6 +278,36 @@
   letter-spacing: 0.02em;
 }
 
+.voice-feedback {
+  margin-top: 0.75rem;
+  padding: 0.6rem 0.75rem;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  width: 100%;
+  text-align: left;
+}
+
+.voice-you-said {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.7);
+  margin: 0 0 0.35rem 0;
+}
+
+.voice-loading {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.6);
+  margin: 0;
+  font-style: italic;
+}
+
+.voice-answer {
+  font-size: 0.9rem;
+  color: rgba(125, 184, 122, 0.95);
+  margin: 0;
+  line-height: 1.4;
+}
+
 /* Mic section — hero focal point, directly below card */
 .voice-mic-section {
   display: flex;

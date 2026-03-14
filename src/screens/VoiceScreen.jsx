@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { BackIcon, SpeakerIcon, MicIcon } from '../components/Icons'
@@ -22,12 +22,20 @@ const stagger = {
   },
 }
 
+const SpeechRecognition = typeof window !== 'undefined' && (window.SpeechRecognition || window.webkitSpeechRecognition)
+
 export default function VoiceScreen() {
   const { scenarioId, lessonId } = useParams()
   const navigate = useNavigate()
   const { unlockNextAfterLesson } = useProgress()
   const [timer, setTimer] = useState(0)
   const [isRecording, setIsRecording] = useState(false)
+  const [transcript, setTranscript] = useState('')
+  const [answer, setAnswer] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
+  const recognitionRef = useRef(null)
+  const transcriptAccumulatorRef = useRef('')
+  const didRequestResponseRef = useRef(false)
 
   const scenario = SCENARIOS[scenarioId]
   const lesson = scenario?.lessons?.find((l) => l.id === lessonId)
@@ -50,10 +58,93 @@ export default function VoiceScreen() {
 
   const handleBack = () => navigate(-1)
 
-  const handleMicClick = () => {
-    setIsRecording(!isRecording)
-    if (!isRecording) setTimer(0)
+  const fetchVoiceResponse = async (text, expectedPhrase) => {
+    setIsLoading(true)
+    setAnswer('')
+    try {
+      const res = await fetch('/api/voice-response', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ transcript: text, expectedPhrase: expectedPhrase || '' }),
+      })
+      const raw = await res.text()
+      let data = {}
+      try {
+        data = raw ? JSON.parse(raw) : {}
+      } catch (_) {
+        // Server returned non-JSON (e.g. 404 HTML)
+      }
+      if (res.ok && data.answer) {
+        setAnswer(data.answer)
+        if ('speechSynthesis' in window) {
+          const u = new SpeechSynthesisUtterance(data.answer)
+          u.rate = 0.9
+          window.speechSynthesis.speak(u)
+        }
+      } else {
+        const msg = data.error || data.detail || data.hint
+        if (msg) {
+          setAnswer(msg)
+        } else if (res.status === 404) {
+          setAnswer("Voice API not found. Run 'npx vercel dev' for local API, or check deployment.")
+        } else {
+          setAnswer(`Request failed (${res.status}). Try again.`)
+        }
+      }
+    } catch (err) {
+      setAnswer(err?.message?.includes('fetch') ? 'Network error. Check connection.' : 'Something went wrong. Try again.')
+    } finally {
+      setIsLoading(false)
+    }
   }
+
+  const handleMicClick = () => {
+    if (isRecording) {
+      if (recognitionRef.current) {
+        recognitionRef.current.stop()
+      }
+      setIsRecording(false)
+      return
+    }
+    setTranscript('')
+    setAnswer('')
+    transcriptAccumulatorRef.current = ''
+    didRequestResponseRef.current = false
+    setTimer(0)
+    if (!SpeechRecognition) {
+      setAnswer('Voice input is not supported in this browser. Try Chrome.')
+      return
+    }
+    setIsRecording(true)
+    const recognition = new SpeechRecognition()
+    recognition.continuous = true
+    recognition.interimResults = true
+    recognition.lang = 'en-CA'
+    recognition.onresult = (event) => {
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        if (event.results[i].isFinal) {
+          const part = event.results[i][0].transcript
+          transcriptAccumulatorRef.current += part
+          setTranscript((prev) => prev + part)
+        }
+      }
+    }
+    recognition.onend = () => {
+      if (didRequestResponseRef.current) return
+      const text = transcriptAccumulatorRef.current.trim()
+      didRequestResponseRef.current = true
+      if (text) fetchVoiceResponse(text, lesson?.phrase)
+      else setAnswer('No speech heard. Try again and speak clearly.')
+    }
+    recognition.start()
+    recognitionRef.current = recognition
+  }
+
+  useEffect(() => {
+    if (!isRecording && recognitionRef.current) {
+      recognitionRef.current = null
+    }
+  }, [isRecording])
 
   const handleNext = () => {
     unlockNextAfterLesson(lessonId)
@@ -152,6 +243,13 @@ export default function VoiceScreen() {
         </div>
         {lesson?.phrase && (
           <p className="voice-phrase">{lesson.phrase}</p>
+        )}
+        {(transcript || answer || isLoading) && (
+          <div className="voice-feedback" aria-live="polite">
+            {transcript && <p className="voice-you-said">You said: {transcript}</p>}
+            {isLoading && <p className="voice-loading">Thinking…</p>}
+            {answer && !isLoading && <p className="voice-answer">{answer}</p>}
+          </div>
         )}
       </motion.div>
 
