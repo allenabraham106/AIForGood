@@ -178,17 +178,101 @@
       return item.text.trim().length > 0;
     });
   }
+  function splitTextIntoChunks(text, maxLength) {
+    const cleaned = String(text || "").replace(/\s+/g, " ").trim();
+
+    if (!cleaned) {
+      return [];
+    }
+
+    const sentenceParts = cleaned.match(/[^.!?]+[.!?]?/g) || [cleaned];
+    const chunks = [];
+    let currentChunk = "";
+    const limit = typeof maxLength === "number" && maxLength > 0 ? maxLength : 160;
+
+    sentenceParts.map(function (part) {
+      return part.trim();
+    }).filter(Boolean).forEach(function (part) {
+      if (!currentChunk) {
+        currentChunk = part;
+        return;
+      }
+
+      const nextChunk = currentChunk + " " + part;
+
+      if (nextChunk.length <= limit) {
+        currentChunk = nextChunk;
+      } else {
+        chunks.push(currentChunk);
+        currentChunk = part;
+      }
+    });
+
+    if (currentChunk) {
+      chunks.push(currentChunk);
+    }
+
+    return chunks;
+  }
 
   function createSpeechPipeline(options) {
     const settings = Object.assign({}, DEFAULT_SETTINGS, options || {});
     let runId = 0;
+    let hasPrimedSpeech = false;
 
     function stop() {
       runId += 1;
 
       if (supportsSpeechSynthesis()) {
-        global.speechSynthesis.cancel();
+        const synth = global.speechSynthesis;
+
+        if (synth.speaking || synth.pending || synth.paused) {
+          synth.cancel();
+        }
       }
+    }
+    function primeSpeechSynthesis(voice) {
+      return new Promise(function (resolve) {
+        if (!supportsSpeechSynthesis()) {
+          resolve();
+          return;
+        }
+
+        const synth = global.speechSynthesis;
+
+        if (typeof synth.resume === "function") {
+          synth.resume();
+        }
+
+        if (hasPrimedSpeech) {
+          resolve();
+          return;
+        }
+
+        const utterance = new global.SpeechSynthesisUtterance(".");
+        let settled = false;
+
+        utterance.voice = voice;
+        utterance.lang = voice && voice.lang ? voice.lang : "en-US";
+        utterance.rate = 1;
+        utterance.pitch = 1;
+        utterance.volume = 0;
+
+        function finish() {
+          if (settled) {
+            return;
+          }
+
+          settled = true;
+          hasPrimedSpeech = true;
+          resolve();
+        }
+
+        utterance.onend = finish;
+        utterance.onerror = finish;
+        synth.speak(utterance);
+        global.setTimeout(finish, 120);
+      });
     }
 
     function speakSegment(text, voice, rate) {
@@ -240,9 +324,11 @@
       }
 
       stop();
+      await delay(80);
       const currentRunId = ++runId;
       const voices = await loadVoices();
       const voice = chooseVoice(voices, settings.preferredVoiceName);
+      await primeSpeechSynthesis(voice);
 
       if (safeCallbacks.onStateChange) {
         safeCallbacks.onStateChange({
@@ -280,7 +366,19 @@
           });
         }
 
-        await speakSegment(item.text, voice, item.rate);
+        const chunks = splitTextIntoChunks(item.text, 160);
+
+        for (let chunkIndex = 0; chunkIndex < chunks.length; chunkIndex += 1) {
+          if (currentRunId !== runId) {
+            return;
+          }
+
+          await speakSegment(chunks[chunkIndex], voice, item.rate);
+
+          if (chunkIndex < chunks.length - 1) {
+            await delay(90);
+          }
+        }
 
         if (currentRunId !== runId) {
           return;
@@ -374,4 +472,7 @@
     createSpeechPipeline: createSpeechPipeline
   };
 })(globalThis);
+
+
+
 

@@ -485,25 +485,76 @@
     const safeAnalysis = analysis || {};
     const safeOptions = Object.assign({ maxWords: 2 }, options || {});
     const weakWords = getWeakWordResults(safeAnalysis, safeOptions.maxWords);
+
     if (!safeAnalysis.targetText) {
       return [];
     }
+
     if (weakWords.length === 0) {
       return [
-        { id: "coach-praise", label: "Voice Coaching", text: "Nice work. That sounded clear.", rate: 0.82, pauseMs: 700 },
-        { id: "coach-phrase", label: "Voice Coaching", text: "Say the full phrase one more time. " + safeAnalysis.targetText, rate: 0.78, pauseMs: 0 }
+        {
+          id: "coach-praise",
+          label: "Voice Coaching",
+          text: "Nice work. You said the full phrase clearly.",
+          rate: 0.82,
+          pauseMs: 700
+        },
+        {
+          id: "coach-phrase",
+          label: "Voice Coaching",
+          text: "Listen once more, then say it again. " + safeAnalysis.targetText,
+          rate: 0.78,
+          pauseMs: 0
+        }
       ];
     }
+
     const items = [
-      { id: "coach-summary", label: "Voice Coaching", text: "Good start. Let us practice one word at a time.", rate: 0.82, pauseMs: 650 }
+      {
+        id: "coach-summary",
+        label: "Voice Coaching",
+        text: weakWords.length === 1
+          ? "Good start. One word needs more practice."
+          : "Good start. Two words need more practice.",
+        rate: 0.82,
+        pauseMs: 650
+      }
     ];
+
     weakWords.forEach(function (wordResult, index) {
       items.push(
-        { id: "coach-word-intro-" + index, label: "Voice Coaching", text: "Try this word again.", rate: 0.8, pauseMs: 400 },
-        { id: "coach-word-" + index, label: "Voice Coaching", text: wordResult.targetWord, rate: 0.68, pauseMs: 500 }
+        {
+          id: "coach-word-intro-" + index,
+          label: "Voice Coaching",
+          text: "Listen to this word.",
+          rate: 0.8,
+          pauseMs: 350
+        },
+        {
+          id: "coach-word-model-" + index,
+          label: "Voice Coaching",
+          text: wordResult.targetWord,
+          rate: 0.66,
+          pauseMs: 900
+        },
+        {
+          id: "coach-word-retry-" + index,
+          label: "Voice Coaching",
+          text: "Your turn. Say " + wordResult.targetWord + ".",
+          rate: 0.78,
+          pauseMs: 1000
+        }
       );
     });
-    items.push({ id: "coach-retry", label: "Voice Coaching", text: "Now try the whole phrase again. " + safeAnalysis.targetText, rate: 0.78, pauseMs: 0 });
+
+    items.push({
+      id: "coach-retry",
+      label: "Voice Coaching",
+      text: "Now try the whole phrase again. " + safeAnalysis.targetText,
+      rate: 0.78,
+      pauseMs: 0
+    });
+
     return items;
   }
 
@@ -559,7 +610,6 @@
   function createSpeechPractice(options) {
     const settings = Object.assign({ lang: "en-CA" }, options || {});
     let activeAttempt = null;
-    let queuedStopOptions = null;
 
     function clearActiveAttempt(attempt) {
       if (activeAttempt === attempt) {
@@ -959,5 +1009,7 @@
     createSpeechPractice: createSpeechPractice
   };
 })(globalThis);
+
+
 
 
