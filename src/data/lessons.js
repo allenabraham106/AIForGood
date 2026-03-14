@@ -1,5 +1,5 @@
-// Scenario-based lessons for Rohingya newcomers in Waterloo
-// Realistic, beginner-level scenarios: grocery, employment, healthcare, school, social
+// Scenario-based lessons for Rohingya women in Waterloo
+// Target: ~5% English literacy — very short prompts, simple words, audio-first
 
 export const SCENARIOS = {
   basics: {
@@ -8,10 +8,10 @@ export const SCENARIOS = {
     label: '0/4',
     color: 'blue',
     lessons: [
-      { id: 'b1', phrase: 'Hello, how are you?', scenario: 'greeting' },
-      { id: 'b2', phrase: 'My name is ___.', scenario: 'introduction' },
-      { id: 'b3', phrase: 'I need help, please.', scenario: 'help' },
-      { id: 'b4', phrase: 'Thank you very much.', scenario: 'gratitude' },
+      { id: 'b1', prompt: 'They say: Good morning!', phrase: 'Good morning. How are you?', scenario: 'greeting' },
+      { id: 'b2', prompt: 'They ask: Who are you?', phrase: 'My name is ___. I am new.', scenario: 'introduction' },
+      { id: 'b3', prompt: 'They ask: Need help?', phrase: 'Yes, I need help, please.', scenario: 'help' },
+      { id: 'b4', prompt: 'They help you. What do you say?', phrase: 'Thank you.', scenario: 'gratitude' },
     ],
   },
   speaking: {
@@ -20,10 +20,10 @@ export const SCENARIOS = {
     label: '0/4',
     color: 'orange',
     lessons: [
-      { id: 's1', phrase: "I can't make it Saturday — I have a family commitment.", scenario: 'social' },
-      { id: 's2', phrase: 'Where is the bus stop?', scenario: 'transport' },
-      { id: 's3', phrase: 'How much does this cost?', scenario: 'shopping' },
-      { id: 's4', phrase: 'I have an appointment at the doctor.', scenario: 'healthcare' },
+      { id: 's1', prompt: 'They call: Where are you?', phrase: "I'm late. I come soon.", scenario: 'workplace' },
+      { id: 's2', prompt: 'Break time. You ask:', phrase: 'Where is the break room?', scenario: 'workplace' },
+      { id: 's3', prompt: 'You did not hear.', phrase: 'Repeat, please?', scenario: 'workplace' },
+      { id: 's4', prompt: 'You are sick. You tell them:', phrase: 'I am sick. I need tomorrow off.', scenario: 'workplace' },
     ],
   },
   community: {
@@ -32,10 +32,10 @@ export const SCENARIOS = {
     label: '0/4',
     color: 'green',
     lessons: [
-      { id: 'c1', phrase: 'I am looking for work.', scenario: 'employment' },
-      { id: 'c2', phrase: 'My child goes to school here.', scenario: 'school' },
-      { id: 'c3', phrase: 'Where is the grocery store?', scenario: 'shopping' },
-      { id: 'c4', phrase: 'I need to speak with someone in my language.', scenario: 'support' },
+      { id: 'c1', prompt: 'They ask: What do you want?', phrase: 'I am looking for work.', scenario: 'employment' },
+      { id: 'c2', prompt: 'First day. You ask:', phrase: 'What time do I start?', scenario: 'workplace' },
+      { id: 'c3', prompt: 'Someone needs help. You say:', phrase: 'I need help. Room twelve.', scenario: 'workplace' },
+      { id: 'c4', prompt: 'You did not understand.', phrase: 'Sorry. Repeat?', scenario: 'workplace' },
     ],
   },
   progress: {

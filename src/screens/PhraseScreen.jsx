@@ -112,6 +112,9 @@ export default function PhraseScreen() {
             </svg>
           </div>
         </div>
+        {lesson?.prompt && (
+          <p className="voice-prompt">{lesson.prompt}</p>
+        )}
         <div className={`voice-waveform ${isPlaying ? 'active' : ''}`} aria-hidden>
           {Array.from({ length: 16 }).map((_, i) => (
             <motion.span
