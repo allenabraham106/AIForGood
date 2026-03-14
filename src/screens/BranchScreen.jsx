@@ -54,8 +54,7 @@ export default function BranchScreen() {
   return (
     <div className="branch-screen">
       <header className="branch-header">
-        <LeafLogo size={28} className="branch-logo" />
-        <h1 className="branch-title">Branch</h1>
+        <LeafLogo size={36} className="branch-logo" />
         <div className="branch-progress-bar">
           <div className="branch-progress-fill" style={{ width: `${overallProgress * 100}%` }} />
         </div>
@@ -90,7 +89,6 @@ export default function BranchScreen() {
         {Object.entries(SCENARIOS).map(([key, scenario]) => {
           const isLocked = scenario.locked || !isSectionActive(key)
           const completed = getCompletedCount(key)
-          const label = scenario.locked ? '0/4' : `${completed}/4`
           return (
           <button
             key={key}
@@ -107,9 +105,13 @@ export default function BranchScreen() {
             <span className="category-icon" style={{ color: isLocked ? 'var(--text-muted)' : '#7da882' }}>
               <CategoryIcon id={key} />
             </span>
-            <span className="category-progress" style={{ color: isLocked ? 'var(--text-muted)' : '#7da882' }}>
-              {label}
-            </span>
+            {!scenario.locked && (
+              <span className="category-dots" aria-hidden>
+                {[0, 1, 2, 3].map((i) => (
+                  <span key={i} className={`category-dot ${i < completed ? 'done' : ''}`} />
+                ))}
+              </span>
+            )}
           </button>
         )})}
       </nav>
