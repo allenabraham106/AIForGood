@@ -101,15 +101,7 @@ export default function BranchScreen() {
       {showClouds && <Clouds />}
       {showSun && <HappySun side="right" size={90} />}
       <header className="branch-header">
-<<<<<<< HEAD
         <LeafLogo size={36} className="branch-logo" />
-=======
-        <div className="branch-header-top">
-          <LeafLogo size={28} className="branch-logo" />
-          <h1 className="branch-title">Branch</h1>
-          <span className="branch-level-badge">Level {level}</span>
-        </div>
->>>>>>> origin/main
         <div className="branch-progress-bar">
           <div className="branch-progress-fill" style={{ width: `${overallProgress * 100}%` }} />
         </div>
