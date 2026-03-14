@@ -1,0 +1,75 @@
+.app {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(165deg, #9fc5e0 0%, #cce5f0 40%, #e5f2f7 100%);
+  padding: 1.5rem;
+}
+.tree-only {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: 480px;
+  min-height: 380px;
+}
+.tree-wrapper { width: 100%; max-width: 420px; }
+.tree-svg {
+  width: 100%;
+  height: auto;
+  filter: drop-shadow(0 6px 20px rgba(0,0,0,0.08));
+}
+.tree-svg .section.has-leaf .leaf {
+  opacity: 0;
+  animation: leaf-pop 1s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+.tree-svg .section.blooming .leaf {
+  animation: leaf-pop 1s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+@keyframes leaf-pop {
+  to { opacity: 1; transform: scale(1); }
+}
+.level-controls {
+  margin-top: 1.25rem;
+  padding: 1.25rem 1.5rem;
+  background: rgba(255,255,255,0.85);
+  border-radius: 16px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+  text-align: center;
+}
+.level-label {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #5a6c7d;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin-bottom: 0.75rem;
+}
+.level-buttons { display: flex; gap: 0.5rem; justify-content: center; flex-wrap: wrap; }
+.level-buttons button {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  border: 2px solid #c5d9e8;
+  background: #fff;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #4a6b7c;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.level-buttons button:hover {
+  background: #e8f4f8;
+  border-color: #7cb342;
+  color: #2e7d32;
+  transform: translateY(-1px);
+}
+.level-buttons button.active {
+  background: #2e7d32;
+  border-color: #2e7d32;
+  color: #fff;
+}
