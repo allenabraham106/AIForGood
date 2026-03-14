@@ -113,6 +113,9 @@ export default function BranchScreen() {
           </button>
         )})}
       </nav>
+      <footer className="branch-footer">
+        <a href="/demo/" className="branch-demo-link">CareVoice audio demo</a>
+      </footer>
     </div>
   )
 }

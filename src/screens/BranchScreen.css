@@ -140,3 +140,20 @@
   font-weight: 600;
   line-height: 1;
 }
+
+.branch-footer {
+  padding: 12px 0 20px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.branch-demo-link {
+  font-size: 0.9rem;
+  color: var(--accent-light);
+  text-decoration: none;
+  opacity: 0.9;
+}
+
+.branch-demo-link:hover {
+  text-decoration: underline;
+}
