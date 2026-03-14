@@ -65,7 +65,8 @@ export default function BranchScreen() {
     : isSectionActive('speaking') ? 2
     : 1
 
-  const level = isDemoMode ? demoLevel : realLevel
+  const showDemoSwitcher = true
+  const level = showDemoSwitcher ? demoLevel : realLevel
 
   const showSnowflakes = level === 1
   const showStars = level === 2 || level === 3
@@ -75,9 +76,9 @@ export default function BranchScreen() {
 
   return (
     <div className={`branch-screen branch-screen--level-${level}`}>
-      {isDemoMode && (
+      {showDemoSwitcher && (
         <div className="branch-demo" role="group" aria-label="Demo level selector">
-          <span className="branch-demo-label">Demo level:</span>
+          <span className="branch-demo-label">Demo:</span>
           <div className="branch-demo-btns">
             {[1, 2, 3, 4].map((n) => (
               <button
