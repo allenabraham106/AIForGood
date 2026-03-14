@@ -12,7 +12,7 @@ A web application for oral first-language learning, designed for the Rohingya co
 
 ## Audio pipeline (CareVoice hackathon demo)
 
-This repo includes a no-API audio pipeline you can use right away:
+CareVoice role 3 starter pipeline for the hackathon demo. This repo contains a no-API audio pipeline you can use right away:
 
 - Local scenario data for 4 PSW-focused lessons
 - Browser speech synthesis for dialogue, cultural narration, key phrase repetition, and reflection question playback
@@ -39,7 +39,7 @@ This repo includes a no-API audio pipeline you can use right away:
 1. Open `demo/index.html` in a browser.
 2. Click a scenario card.
 3. Click `Play lesson`.
-4. Listen for: dialogue -> narration -> key phrase -> reflection question.
+4. Listen for: dialogue → narration → key phrase → reflection question.
 5. Click `Got it` to simulate the completion handoff.
 
 The audio must be started by a button click because browsers block autoplay.
