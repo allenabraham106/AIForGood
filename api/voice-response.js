@@ -18,9 +18,14 @@ export default async function handler(req, res) {
 
   const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
   if (!apiKey) {
+    // Safe log for debugging in Vercel → Deployments → [deploy] → Functions → Logs
+    console.warn(
+      "Voice API: no key. GEMINI_API_KEY=" + (process.env.GEMINI_API_KEY ? "set" : "missing") +
+      ", GOOGLE_API_KEY=" + (process.env.GOOGLE_API_KEY ? "set" : "missing")
+    );
     res.status(503).json({
       error: "Voice response API not configured",
-      hint: "Set GEMINI_API_KEY (or GOOGLE_API_KEY) in environment",
+      hint: "In Vercel: Settings → Environment Variables → add GEMINI_API_KEY (exact name), enable Production, then Redeploy",
     });
     return;
   }
@@ -43,7 +48,7 @@ export default async function handler(req, res) {
 
   try {
     const response = await ai.models.generateContent({
-      model: "gemini-2.0-flash",
+      model: "gemini-3-flash-preview",
       contents: `${SYSTEM}\n\nWhat the learner said: "${userSaid}".${target}\n\nYour short response:`,
       config: { maxOutputTokens: 80 },
     });
@@ -71,10 +76,11 @@ export default async function handler(req, res) {
     res.setHeader("Cache-Control", "s-maxage=0, no-store");
     res.status(200).json({ answer });
   } catch (err) {
-    console.error("Gemini voice-response error:", err?.message || err);
+    const msg = err?.message || String(err);
+    console.error("Gemini voice-response error:", msg);
     res.status(502).json({
       error: "Could not get response",
-      detail: err?.message || "Unknown error",
+      detail: msg,
     });
   }
   } catch (err) {
